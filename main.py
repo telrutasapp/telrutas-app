@@ -102,23 +102,38 @@ with st.sidebar:
 # --- LÓGICA DE TASA ---
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    try:
-        url = "https://www.monitordedivisavenezuela.com/"
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        response = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        elementos = soup.find_all(['h3', 'p', 'span'])
-        for el in elementos:
-            texto = el.get_text().strip()
-            if "Bs." in texto and "," in texto:
-                limpio = texto.replace('Bs.', '').replace(' ', '').replace('.', '').replace(',', '.')
-                return float(limpio)
-        return 417.36
-    except: return 417.36
+    # Lista de fuentes para mayor seguridad
+    urls = [
+        "https://www.monitordedivisavenezuela.com/",
+        "https://exchangemonitor.net/dolar-venezuela"
+    ]
+    # Simulamos ser un navegador real para evitar bloqueos
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+    
+    for url in urls:
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # Buscamos en todo el texto de la página
+                textos = soup.find_all(string=True)
+                for t in textos:
+                    # Buscamos el patrón "Bs. XX,XX"
+                    if "Bs." in t and "," in t:
+                        import re
+                        # Extrae el primer número que encuentre con formato decimal
+                        match = re.search(r'(\d+[\.,]\d+)', t)
+                        if match:
+                            valor_limpio = match.group(1).replace('.', '').replace(',', '.')
+                            return float(valor_limpio)
+        except:
+            continue
+    
+    # Valor de respaldo manual si todo lo anterior falla (Aproximado Feb 2026)
+    return 419.46
 
 tasa_fija = obtener_tasa()
 def f_ve(m): return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
-
 # --- 2. ENCABEZADO ---
 col_logo, col_desc = st.columns([1.2, 2])
 with col_logo:
