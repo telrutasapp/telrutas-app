@@ -9,6 +9,15 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+# --- CONFIGURACIÓN PARA QUE PAREZCA APP EN EL CELULAR ---
+st.markdown("""
+    <head>
+        <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#002D62">
+        <link rel="apple-touch-icon" href="logo.png">
+    </head>
+""", unsafe_allow_html=True)
+
 # --- CONFIGURACIÓN DE PERSISTENCIA (SECRETS + LOCAL) ---
 CONFIG_FILE = "config_tarifas.json"
 
@@ -137,12 +146,12 @@ def f_ve(m): return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").repl
 # --- 2. ENCABEZADO ---
 col_logo, col_desc = st.columns([1.2, 2])
 with col_logo:
-    if os.path.exists("logo.jpg"): st.image("logo.jpg", use_container_width=True)
+    # Cambiamos .jpg por .png que es tu nuevo archivo
+    if os.path.exists("logo.png"): 
+        st.image("logo.png", use_container_width=True)
 with col_desc:
     st.markdown(f'<div class="header-info"><p class="header-title">TelRutas Barinas</p><p class="header-text"><b>🚗 Traslados:</b> Mínima ${config["tarifa_base"]:.2f}<br><b>📦 Encomiendas:</b> Tarifas fijas.</p></div>', unsafe_allow_html=True)
     st.markdown(f'<div class="tasa-display">📊 Cotización del día: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
-
-st.divider()
 
 # --- 3. REGISTRO ---
 st.subheader("👤 Registro Cliente:")
