@@ -83,6 +83,29 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# --- ENCABEZADO: LOGO Y TEXTO ALINEADOS ---
+col1, col2 = st.columns([1, 2.2])  # Ajuste de proporción para que el texto tenga espacio
+
+with col1:
+    # Mostramos el logo (asegúrate de que el archivo se llame logo.png)
+    st.image("logo.png", width=200)
+
+with col2:
+    # Este bloque HTML alinea verticalmente el texto con el logo
+    st.markdown("""
+        <div style="display: flex; flex-direction: column; justify-content: center; height: 160px; margin-top: 10px;">
+            <div class="header-info">
+                <p class="header-title" style="margin-bottom: 5px;">TelRutas Barinas</p>
+                <p class="header-text" style="margin: 2px 0;">🚗 <b>Traslados:</b> Mínima $3.00</p>
+                <p class="header-text" style="margin: 2px 0;">📦 <b>Encomiendas:</b> Tarifas fijas.</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+# Separador sutil para que no pegue con lo que sigue
+st.markdown("<br>", unsafe_allow_html=True)
+
+
 # --- PANEL DE ADMINISTRACIÓN ---
 if 'admin_logged' not in st.session_state: st.session_state.admin_logged = False
 
