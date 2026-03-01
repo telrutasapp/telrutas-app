@@ -12,10 +12,12 @@ from bs4 import BeautifulSoup
 # --- CONFIGURACIÓN PARA FORZAR EL ICONO NUEVO ---
 st.markdown("""
     <head>
-        <link rel="manifest" href="manifest.json?v=2">
-        <link rel="apple-touch-icon" href="logo.png?v=2">
-        <link rel="icon" href="logo.png?v=2" type="image/png">
+        <link rel="manifest" href="./manifest.json">
+        <link rel="icon" href="./logo.png" type="image/png">
+        <link rel="apple-touch-icon" href="./logo.png">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="theme-color" content="#002D62">
+        <meta name="mobile-web-app-capable" content="yes">
     </head>
 """, unsafe_allow_html=True)
 
