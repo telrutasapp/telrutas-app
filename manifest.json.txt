@@ -1,0 +1,13 @@
+{
+  "name": "TelRutas Barinas",
+  "short_name": "TelRutas",
+  "display": "standalone",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
