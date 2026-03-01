@@ -9,12 +9,13 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-# --- CONFIGURACIÓN PARA QUE PAREZCA APP EN EL CELULAR ---
+# --- CONFIGURACIÓN PARA FORZAR EL ICONO NUEVO ---
 st.markdown("""
     <head>
-        <link rel="manifest" href="manifest.json">
+        <link rel="manifest" href="manifest.json?v=2">
+        <link rel="apple-touch-icon" href="logo.png?v=2">
+        <link rel="icon" href="logo.png?v=2" type="image/png">
         <meta name="theme-color" content="#002D62">
-        <link rel="apple-touch-icon" href="logo.png">
     </head>
 """, unsafe_allow_html=True)
 
