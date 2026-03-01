@@ -62,6 +62,7 @@ st.set_page_config(page_title="TelRutas - Cotizador", layout="centered")
 
 st.markdown("""
     <style>
+    /* Estilos generales de la App */
     .stApp { background-color: #ffffff; }
     h1, h2, h3, h4 { color: #002D62 !important; }
     .header-info { border-left: 5px solid #FF7F00; padding-left: 20px; margin-left: 10px; }
@@ -72,6 +73,13 @@ st.markdown("""
     .cotizacion-box { background-color: #f0f4f8; padding: 20px; border-radius: 15px; border-left: 8px solid #FF7F00; border-right: 1px solid #002D62; border-top: 1px solid #002D62; border-bottom: 1px solid #002D62; text-align: center; }
     .tasa-display { background-color: #e8f4fd; border: 1px solid #002D62; border-radius: 10px; padding: 10px; text-align: center; margin-top: 10px; font-weight: bold; color: #002D62; }
     .btn-disabled { background-color: #cccccc !important; color: #666; padding: 18px; text-align: center; border-radius: 12px; font-weight: bold; font-size: 22px; margin-top: 20px; border: 1px solid #999; }
+
+    /* --- BLOQUEO DE GITHUB Y MENÚS DE STREAMLIT --- */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display:none;}
+    /* ---------------------------------------------- */
     </style>
     """, unsafe_allow_html=True)
 
