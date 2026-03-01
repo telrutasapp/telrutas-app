@@ -82,22 +82,25 @@ st.markdown("""
     /* ---------------------------------------------- */
     </style>
     """, unsafe_allow_html=True)
+# --- ENCABEZADO: LOGO GRANDE Y TEXTO ---
 
-# --- ENCABEZADO PROFESIONAL: LOGO GRANDE Y TEXTO CENTRADO ---
+# 1. El Logo en su tamaño original (puedes subir el 300 a 350 si lo quieres más grande)
+st.image("logo.png", width=300)
+
+# 2. Espacio manual para que el texto no pegue arriba del logo
+st.markdown("<br>", unsafe_allow_html=True)
+
+# 3. El texto con su borde naranja (ajustado para que no se pegue a los bordes)
 st.markdown("""
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        <div style="flex: 0 0 auto;">
-            <img src="https://raw.githubusercontent.com/tu-usuario/tu-repo/main/logo.png" width="280" style="border-radius: 10px;">
-        </div>
-        <div style="flex: 1; padding-left: 20px; margin-left: 10px; border-left: 5px solid #FF7F00;">
-            <p style="font-size: 34px; font-weight: bold; margin: 0; color: #002D62; line-height: 1.1;">TelRutas Barinas</p>
-            <p style="font-size: 18px; color: #444; margin: 5px 0;">🚗 <b>Traslados:</b> Mínima $3.00</p>
-            <p style="font-size: 18px; color: #444; margin: 5px 0;">📦 <b>Encomiendas:</b> Tarifas fijas.</p>
-        </div>
+    <div style="border-left: 6px solid #FF7F00; padding-left: 20px; margin-left: 5px;">
+        <h1 style="margin: 0; color: #002D62; font-size: 32px;">TelRutas Barinas</h1>
+        <p style="font-size: 18px; color: #444; margin: 5px 0;">🚗 <b>Traslados:</b> Mínima $3.00</p>
+        <p style="font-size: 18px; color: #444; margin: 5px 0;">📦 <b>Encomiendas:</b> Tarifas fijas.</p>
     </div>
-    <hr style="border: 0; height: 1px; background: #eee; margin-bottom: 25px;">
 """, unsafe_allow_html=True)
 
+# 4. Espacio final antes de la cotización
+st.markdown("<br>", unsafe_allow_html=True)
 
 # --- PANEL DE ADMINISTRACIÓN ---
 if 'admin_logged' not in st.session_state: st.session_state.admin_logged = False
