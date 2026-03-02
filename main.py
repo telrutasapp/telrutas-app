@@ -171,54 +171,33 @@ if st.session_state.punto_a and st.session_state.punto_b:
 elif not st.session_state.modo_manual and not loc:
     st.info("📡 Obteniendo señal GPS...")
 
-  # --- SECCIÓN FINAL: INVITACIÓN A INSTALAR APP ---
+ # --- SECCIÓN: CONVERTIR EN APP (GUÍA NATIVA) ---
 st.divider()
 
-st.markdown("""
-    <div style="text-align: center; padding: 20px; background-color: #f9f9f9; border-radius: 15px; border: 1px dashed #002D62;">
-        <h3 style="color: #002D62; margin-bottom: 5px;">📲 ¡Llévanos en tu bolsillo!</h3>
-        <p style="color: #444; font-size: 14px;">Instala <b>TelRutas</b> en tu pantalla de inicio para pedir tus traslados más rápido.</p>
-    </div>
-    
-    <script>
-    // Lógica para detectar el evento de instalación
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // Creamos un botón dinámico que solo aparece si no está instalada
-        const btnInstalar = document.createElement('button');
-        btnInstalar.innerText = 'INSTALAR TELRUTAS APP';
-        btnInstalar.style.width = '100%';
-        btnInstalar.style.marginTop = '10px';
-        btnInstalar.style.padding = '15px';
-        btnInstalar.style.backgroundColor = '#FF7F00';
-        btnInstalar.style.color = 'white';
-        btnInstalar.style.border = 'none';
-        btnInstalar.style.borderRadius = '10px';
-        btnInstalar.style.fontWeight = 'bold';
-        btnInstalar.style.cursor = 'pointer';
-        
-        // Lo insertamos al final de la página
-        document.body.appendChild(btnInstalar);
+col1, col2 = st.columns([1, 4])
+with col1:
+    st.markdown("<h1 style='text-align: center;'>📲</h1>", unsafe_allow_html=True)
+with col2:
+    st.markdown("### ¡Instala TelRutas en tu Telefono!")
+    st.caption("Accede más rápido sin usar el navegador.")
 
-        btnInstalar.addEventListener('click', () => {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('Usuario aceptó instalar');
-                }
-                btnInstalar.style.display = 'none';
-            });
-        });
-    });
-    </script>
+# Detectamos el sistema operativo con un pequeño truco visual
+st.markdown("""
+    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #FF7F00;">
+        <p><b>Para instalar esta App ahora:</b></p>
+        <ol>
+            <li>Toca los <b>3 puntos (⋮)</b> o el botón <b>Compartir (↑)</b> de tu navegador.</li>
+            <li>Busca la opción que dice: <b>"Instalar aplicación"</b> o <b>"Añadir a la pantalla de inicio"</b>.</li>
+            <li>¡Listo! El logo de TelRutas aparecerá en tu menú de aplicaciones.</li>
+        </ol>
+    </div>
 """, unsafe_allow_html=True)
 
-# Mensaje de guía según el teléfono
-with st.expander("❓ ¿Cómo instalar manualmente?"):
-    st.markdown("""
-    * **Android (Chrome):** Toca los 3 puntos (⋮) y elige **"Instalar aplicación"**.
-    * **iPhone (Safari):** Toca el botón de compartir (icon_share) y elige **"Añadir a la pantalla de inicio"**.
-    """)  
+# Esto fuerza a que la barra de direcciones se oculte cuando la instalen
+st.markdown("""
+    <script>
+    if (window.navigator.standalone) {
+        document.body.style.marginTop = "20px";
+    }
+    </script>
+""", unsafe_allow_html=True)
