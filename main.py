@@ -1,4 +1,6 @@
 import streamlit as st
+st.set_page_config(page_title="TelRutas Barinas", layout="wide")
+st.markdown('<meta name="referrer" content="no-referrer">', unsafe_allow_html=True)
 import folium
 from streamlit_folium import st_folium
 from streamlit_js_eval import get_geolocation
@@ -171,21 +173,58 @@ if map_data and map_data["last_clicked"]:
     if st.session_state.modo_manual and st.session_state.punto_a is None: st.session_state.punto_a = click; st.rerun()
     elif st.session_state.punto_b is None: st.session_state.punto_b = click; st.rerun()
 
-# --- 7. CÁLCULO FINAL Y WHATSAPP ---
+# --- 7. CÁLCULO FINAL Y WHATSAPP (CÓDIGO ACTUALIZADO) ---
 if st.session_state.punto_a and st.session_state.punto_b:
     dist = geodesic(st.session_state.punto_a, st.session_state.punto_b).km
+    
+    # Cálculo del costo
     costo_ruta = config["tarifa_base"] if dist <= 1.0 else config["tarifa_base"] + ((dist - 1.0) * config["precio_km"])
     total_usd = costo_ruta + recargo_fijo
     total_bs = total_usd * tasa_fija
     
-    st.markdown(f'<div class="cotizacion-box"><h4>COTIZACIÓN ESTIMADA</h4><h1>Bs. {f_ve(total_bs)}</h1><h2>$ {f_ve(total_usd)} USD</h2><p>Distancia: {dist:.2f} km</p></div>', unsafe_allow_html=True)
+    # Mostrar la cotización en pantalla con tus decimales (Ej: 450,45)
+    st.markdown(f'''
+        <div class="cotizacion-box">
+            <h4>COTIZACIÓN ESTIMADA</h4>
+            <h1>Bs. {f_ve(total_bs)}</h1>
+            <h2>$ {f_ve(total_usd)} USD</h2>
+            <p>Distancia: {dist:.2f} km</p>
+            <p style="color:#002D62;"><b>Servicio: {st.session_state.tipo}</b></p>
+        </div>
+    ''', unsafe_allow_html=True)
     
-    if st.button("🔄 Reiniciar Ruta"): st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
+    if st.button("🔄 Reiniciar Ruta"): 
+        st.session_state.punto_a = st.session_state.punto_b = None
+        st.rerun()
 
+    # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP ---
     if nombre_cliente and telefono_cliente:
-        msg = f"¡Hola TelRutas! 👋\n👤 *CLIENTE:* {nombre_cliente}\n📞 *TEL:* {telefono_cliente}\n📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
-        url_wa = f"https://wa.me/{config['whatsapp']}?text={urllib.parse.quote(msg)}"
-        st.markdown(f'<a href="{url_wa}" target="_blank" style="text-decoration:none;"><div style="background-color:#FF7F00; color:white; padding:18px; text-align:center; border-radius:12px; font-weight:bold; font-size:22px; margin-top:20px;">✅ SOLICITAR AHORA</div></a>', unsafe_allow_html=True)
+        # Aquí incluimos el tipo de servicio dinámicamente
+        msg = (
+            f"¡Hola TelRutas! 👋\n"
+            f"👤 *CLIENTE:* {nombre_cliente}\n"
+            f"📞 *TEL:* {telefono_cliente}\n"
+            f"🛠️ *SERVICIO:* {st.session_state.tipo}\n"
+            f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
+            f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
+            f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
+        )
+        
+        # Codificamos el mensaje para que los espacios y emojis no den error
+        msg_encoded = urllib.parse.quote(msg)
+        url_wa = f"https://wa.me/{config['whatsapp']}?text={msg_encoded}"
+        
+        # Botón de acción con el color Naranja de TelRutas
+        st.markdown(f'''
+            <a href="{url_wa}" target="_blank" style="text-decoration:none;">
+                <div style="background-color:#FF7F00; color:white; padding:18px; text-align:center; border-radius:12px; font-weight:bold; font-size:22px; margin-top:20px; box-shadow: 0px 4px 10px rgba(0,0,0,0.2);">
+                    🚀 SOLICITAR {st.session_state.tipo.upper()} AHORA
+                </div>
+            </a>
+        ''', unsafe_allow_html=True)
+    else:
+        st.warning("⚠️ Por favor, sube y completa tu Nombre y Teléfono para habilitar el botón de solicitud.")
+
 elif not st.session_state.modo_manual and not loc:
-    st.info("📡 Obteniendo señal GPS...")
+    st.info("📡 Obteniendo señal GPS... Por favor, asegúrese de dar permisos de ubicación.")
 
