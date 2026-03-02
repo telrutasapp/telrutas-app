@@ -142,10 +142,27 @@ recargo_fijo = 0.0
 detalle_paquete = ""
 if st.session_state.tipo == "Encomienda":
     st.markdown("<p style='color:#FF7F00; font-weight:bold;'>📦 DETALLES DE ENCOMIENDA</p>", unsafe_allow_html=True)
-    desc_prod = st.text_input("¿Qué producto envía?")
-    opcion = st.selectbox("Peso:", [f"Ligero +${config['recargo_ligero']}", f"Mediano +${config['recargo_mediano']}", f"Pesado +${config['recargo_pesado']}"])
-    recargo_fijo = config["recargo_ligero"] if "Ligero" in opcion else config["recargo_mediano"] if "Mediano" in opcion else config["recargo_pesado"]
-    detalle_paquete = opcion
+    
+    # Campo para que escriban qué es el paquete
+    desc_prod = st.text_input("¿Qué producto envía?", placeholder="Ej: Repuestos, documentos, comida...")
+    
+    # Selector con los kilos detallados que pediste
+    opcion = st.selectbox("Seleccione el Peso:", [
+        f"Ligero (Hasta 2 kg) +${config['recargo_ligero']:.2f}", 
+        f"Mediano (Hasta 20 kg) +${config['recargo_mediano']:.2f}", 
+        f"Pesado (Hasta 50 kg) +${config['recargo_pesado']:.2f}"
+    ])
+    
+    # Lógica de recargo (se mantiene igual, buscando la palabra clave)
+    if "Ligero" in opcion:
+        recargo_fijo = config["recargo_ligero"]
+    elif "Mediano" in opcion:
+        recargo_fijo = config["recargo_mediano"]
+    else:
+        recargo_fijo = config["recargo_pesado"]
+    
+    # Guardamos la descripción y el peso para el mensaje de WhatsApp
+    detalle_paquete = f"{desc_prod} ({opcion})"
 
 # --- 6. RUTA Y MAPA ---
 st.subheader("📍 Definir Ruta")
@@ -205,6 +222,7 @@ if st.session_state.punto_a and st.session_state.punto_b:
             f"👤 *CLIENTE:* {nombre_cliente}\n"
             f"📞 *TEL:* {telefono_cliente}\n"
             f"🛠️ *SERVICIO:* {st.session_state.tipo}\n"
+            f"📦 *PAQUETE:* {detalle_paquete}\n"
             f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
             f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
             f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
