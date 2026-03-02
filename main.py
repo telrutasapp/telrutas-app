@@ -43,29 +43,20 @@ st.set_page_config(page_title="TelRutas - Cotizador", layout="centered", initial
 
 st.markdown("""
     <style>
-  /* --- ESTO ELIMINA EL BOTÓN NEGRO Y BARRAS DE UNA VEZ --- */
+    /* OCULTAR TODO EL SISTEMA DE STREAMLIT */
     #MainMenu {visibility: hidden !important;}
     header {visibility: hidden !important;}
     footer {visibility: hidden !important;}
-    
-    /* Selector específico para el botón de Manage App */
     .stAppDeployButton {display:none !important;}
     [data-testid="stStatusWidget"] {display:none !important;}
     [data-testid="stSidebar"] {display: none !important;}
-    
-    /* Quita el espacio en blanco que deja la barra superior */
     .stAppHeader {display: none !important;}
-
-    /* Estilos Generales que ya tenías... */
+    
+    /* ESTILO DE LA APP */
     .stApp { background-color: #ffffff; }
-    h1, h2, h3, h4 { color: #002D62 !important; }
-    .stButton>button { background-color: #002D62; color: white; border-radius: 10px; border: 2px solid #002D62; font-weight: bold; }
-    .stButton>button:hover { background-color: #FF7F00; border-color: #FF7F00; color: white; }
-    .cotizacion-box { background-color: #f0f4f8; padding: 20px; border-radius: 15px; border-left: 8px solid #FF7F00; border-right: 1px solid #002D62; border-top: 1px solid #002D62; border-bottom: 1px solid #002D62; text-align: center; }
-    .tasa-display { background-color: #e8f4fd; border: 1px solid #002D62; border-radius: 10px; padding: 10px; text-align: center; margin-top: 10px; font-weight: bold; color: #002D62; }
-    .btn-disabled { background-color: #cccccc !important; color: #666; padding: 18px; text-align: center; border-radius: 12px; font-weight: bold; font-size: 22px; margin-top: 20px; border: 1px solid #999; }
+    /* ... el resto de tus estilos de botones y colores ... */
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- 2. ENCABEZADO: LOGO Y TEXTO ---
 st.image("logo.png", width=350)
@@ -177,16 +168,3 @@ if st.session_state.punto_a and st.session_state.punto_b:
 elif not st.session_state.modo_manual and not loc:
     st.info("📡 Obteniendo señal GPS...")
 
-# --- SECCIÓN: GUÍA DE INSTALACIÓN REAL ---
-st.divider()
-
-st.markdown("""
-    <div style="background-color: #002D62; padding: 20px; border-radius: 15px; text-align: center; color: white;">
-        <h3 style="margin:0;">📲 ¡Instala TelRutas en tu Telefono!</h3>
-        <p style="font-size: 0.9em; opacity: 0.9;">Accede más rápido sin usar el navegador.</p>
-        <div style="background-color: white; color: #333; padding: 10px; border-radius: 10px; text-align: left; margin-top: 10px;">
-            <b>1.</b> Toca los <b>3 puntos (⋮)</b> o <b>Compartir (↑)</b>.<br>
-            <b>2.</b> Elige <b>"Añadir a pantalla de inicio"</b> o <b>"Instalar"</b>.
-        </div>
-    </div>
-""", unsafe_allow_html=True)
