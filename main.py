@@ -10,8 +10,33 @@ import os
 import requests
 import json
 from bs4 import BeautifulSoup
-
 import streamlit as st
+
+# --- AJUSTE DE ESPACIO SUPERIOR (FUERZA BRUTA) ---
+st.markdown("""
+<style>
+    /* 1. Elimina el espacio por defecto de Streamlit en toda la app */
+    .block-container {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        margin-top: -30px !important; /* Sube todo el contenido */
+    }
+
+    /* 2. Oculta la barra de menú superior de Streamlit (opcional, para más espacio) */
+    header {visibility: hidden;}
+    
+    /* 3. Ajusta el contenedor específico de la imagen (logo) */
+    .stImage {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+    
+    /* 4. Asegura que la columna que contiene el logo no tenga margen */
+    [data-testid="column"] {
+        padding-top: 0px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- ESTILO PARA EL MENÚ PROFESIONAL ---
 st.markdown("""
