@@ -11,33 +11,73 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-# 1. BOTÓN AZUL (ACTUALIZAR APLICACIÓN)
-if st.button("🔄 ACTUALIZAR APLICACIÓN", use_container_width=True, type="primary"):
-    st.rerun()
+# --- INICIO DE INTERFAZ MINIMALISTA (TELRUTAS) ---
 
-# 2. LÓGICA DEL BOTÓN NARANJA (MENÚ QR)
-if "mostrar_qr" not in st.session_state:
-    st.session_state.mostrar_qr = False
-
-if st.button("☰ MENÚ DE INSTALACIÓN", use_container_width=True):
-    st.session_state.mostrar_qr = not st.session_state.mostrar_qr
-
-# Mostrar el QR si se activa el botón naranja
-if st.session_state.mostrar_qr:
-    with st.container(border=True):
-        st.write("### 📥 Descarga para Android")
-        st.image("qr_descarga.png", caption="Escanea para bajar el archivo .apk", use_container_width=True)
-        st.info("💡 Al escanear, se descargará el archivo 'telrutas.apk' directamente.")
-
-# --- CONFIGURACIÓN PARA FORZAR EL ICONO NUEVO ---
+# 1. Definimos el CSS para botones cuadrados y colores exactos
 st.markdown("""
-    <head>
-        <link rel="icon" href="./logo.png" type="image/png">
-        <link rel="apple-touch-icon" href="./logo.png">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#002D62">
-    </head>
+<style>
+    /* Estilo general para los botones de control */
+    .stButton > button {
+        width: 80px !important; /* Ancho fijo para hacerlo cuadrado */
+        height: 80px !important; /* Alto fijo */
+        border-radius: 10px !important; /* Bordes ligeramente suaves, pero cuadrados */
+        border: none !important;
+        font-size: 30px !important; /* Tamaño del icono grande */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Color NARANJA para el botón de MENÚ */
+    .boton-naranja > div > button {
+        background-color: #FF7F00 !important; /* Naranja exacto */
+        color: white !important;
+    }
+    .boton-naranja > div > button:hover {
+        background-color: #E67200 !important; /* Naranja un poco más oscuro al pasar el mouse */
+    }
+
+    /* Color AZUL para el botón de ACTUALIZAR */
+    .boton-azul > div > button {
+        background-color: #00569E !important; /* Azul del logo exacto */
+        color: white !important;
+    }
+    .boton-azul > div > button:hover {
+        background-color: #004580 !important; /* Azul un poco más oscuro al pasar el mouse */
+    }
+</style>
 """, unsafe_allow_html=True)
+
+# 2. Creamos columnas para ubicar los botones a la izquierda
+# st.columns([1, 1, 10]) crea 3 columnas, las dos primeras pequeñas (para botones) y la tercera grande (vacía)
+col1, col2, col3 = st.columns([1, 1, 10])
+
+with col1:
+    # Botón de ACTUALIZAR (Azul del logo, solo icono)
+    st.markdown('<div class="boton-azul">', unsafe_allow_html=True)
+    if st.button("🔄", help="Actualizar Aplicación"):
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col2:
+    # Botón de MENÚ (Naranja, solo icono)
+    st.markdown('<div class="boton-naranja">', unsafe_allow_html=True)
+    if st.button("☰", help="Menú de Instalación"):
+        # Lógica para mostrar/ocultar el QR
+        if "mostrar_qr" not in st.session_state:
+            st.session_state.mostrar_qr = False
+        st.session_state.mostrar_qr = not st.session_state.mostrar_qr
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# 3. Sección del QR (Naranja, solo si se activa)
+if "mostrar_qr" in st.session_state and st.session_state.mostrar_qr:
+    with st.container(border=True):
+        st.write("### 📥 Descarga la App para Android")
+        st.image("qr_descarga.png", caption="Escanea el QR para instalar telrutas.apk", width=300)
+        st.info("💡 Se descargará el archivo .apk directamente a tu teléfono.")
+
+# --- FIN DE INTERFAZ MINIMALISTA (CONTINÚA TU CÓDIGO) ---
 
 # --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
 def cargar_config():
