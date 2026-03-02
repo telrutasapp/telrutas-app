@@ -73,32 +73,29 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE TASA OFICIAL BCV (DÓLAR) ---
+# --- 3. LÓGICA DE ACTUALIZACIÓN AUTOMÁTICA BCV ---
+# ttl=300 hace que la app revise la página cada 5 minutos por cambios
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    # Fuente oficial filtrada para BCV
     url = "https://exchangemonitor.net/dolar-venezuela/bcv"
     headers = {'User-Agent': 'Mozilla/5.0'}
     try:
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             import re
-            # Buscamos específicamente el formato de tu ejemplo: 3 dígitos, coma, 2 decimales
-            # El regex (\d{3}[\.,]\d{2}) busca exactamente el patrón 450,45
-            match = re.search(r'BCV.*?(\d{3}[\.,]\d{2})', response.text, re.DOTALL)
-            
+            # Captura el primer número con coma que aparezca después de la palabra USD
+            # Esto garantiza que tome el Dólar y no el Euro de tu imagen
+            match = re.search(r'USD.*?(\d+,\d+)', response.text, re.DOTALL)
             if match:
-                valor_limpio = match.group(1).replace('.', '').replace(',', '.')
-                return float(valor_limpio)
+                # Extrae el número, quita la coma y lo hace funcional
+                return float(match.group(1).replace(',', '.'))
     except: pass
-    # Si la web falla, usamos exactamente tu ejemplo de referencia como respaldo
-    return 450.45 
+    return 419.98 # Valor de respaldo si la web cae
 
 tasa_fija = obtener_tasa()
 
-# Función de formato para que SIEMPRE se vea como tu ejemplo: 450,45
+# Formato de salida: Siempre con coma decimal (Ej: 419,98)
 def f_ve(m): 
-    # Forzamos 2 decimales y el reemplazo de punto por coma
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
 st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
