@@ -170,3 +170,55 @@ if st.session_state.punto_a and st.session_state.punto_b:
         st.markdown(f'<a href="{url_wa}" target="_blank" style="text-decoration:none;"><div style="background-color:#FF7F00; color:white; padding:18px; text-align:center; border-radius:12px; font-weight:bold; font-size:22px; margin-top:20px;">✅ SOLICITAR AHORA</div></a>', unsafe_allow_html=True)
 elif not st.session_state.modo_manual and not loc:
     st.info("📡 Obteniendo señal GPS...")
+
+  # --- SECCIÓN FINAL: INVITACIÓN A INSTALAR APP ---
+st.divider()
+
+st.markdown("""
+    <div style="text-align: center; padding: 20px; background-color: #f9f9f9; border-radius: 15px; border: 1px dashed #002D62;">
+        <h3 style="color: #002D62; margin-bottom: 5px;">📲 ¡Llévanos en tu bolsillo!</h3>
+        <p style="color: #444; font-size: 14px;">Instala <b>TelRutas</b> en tu pantalla de inicio para pedir tus traslados más rápido.</p>
+    </div>
+    
+    <script>
+    // Lógica para detectar el evento de instalación
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Creamos un botón dinámico que solo aparece si no está instalada
+        const btnInstalar = document.createElement('button');
+        btnInstalar.innerText = 'INSTALAR TELRUTAS APP';
+        btnInstalar.style.width = '100%';
+        btnInstalar.style.marginTop = '10px';
+        btnInstalar.style.padding = '15px';
+        btnInstalar.style.backgroundColor = '#FF7F00';
+        btnInstalar.style.color = 'white';
+        btnInstalar.style.border = 'none';
+        btnInstalar.style.borderRadius = '10px';
+        btnInstalar.style.fontWeight = 'bold';
+        btnInstalar.style.cursor = 'pointer';
+        
+        // Lo insertamos al final de la página
+        document.body.appendChild(btnInstalar);
+
+        btnInstalar.addEventListener('click', () => {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('Usuario aceptó instalar');
+                }
+                btnInstalar.style.display = 'none';
+            });
+        });
+    });
+    </script>
+""", unsafe_allow_html=True)
+
+# Mensaje de guía según el teléfono
+with st.expander("❓ ¿Cómo instalar manualmente?"):
+    st.markdown("""
+    * **Android (Chrome):** Toca los 3 puntos (⋮) y elige **"Instalar aplicación"**.
+    * **iPhone (Safari):** Toca el botón de compartir (icon_share) y elige **"Añadir a la pantalla de inicio"**.
+    """)  
