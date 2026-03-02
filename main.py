@@ -73,31 +73,29 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE TASA BCV OFICIAL (DÓLAR) ---
+# --- 3. LÓGICA DE TASA OFICIAL BCV (DÓLAR) ---
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    # Fuente que separa claramente Dólar de Euro
+    # Fuente específica para evitar capturar bancos privados o el Euro
     url = "https://exchangemonitor.net/dolar-venezuela/bcv"
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
     try:
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             import re
-            # Buscamos el monto que esté cerca de la palabra USD o Dólar
-            # Esto evita que capturemos el Euro por error
-            texto = response.text
-            match = re.search(r'USD.*?(\d{2,3}[\.,]\d{2})', texto, re.DOTALL)
-            if not match:
-                match = re.search(r'(\d{2,3}[\.,]\d{2})', texto) # Fallback si no halla USD
-            
+            # Buscamos el patrón "BCV" seguido del primer número con decimales (formato 00,00)
+            # Esto obliga al código a saltarse Banesco y otros indicadores
+            match = re.search(r'BCV.*?(\d{2,3}[\.,]\d{2})', response.text, re.DOTALL)
             if match:
+                # Convertimos el formato de texto a número usable por Python
                 valor_limpio = match.group(1).replace('.', '').replace(',', '.')
                 return float(valor_limpio)
     except: pass
-    return 450.45 # Respaldo manual (Ejemplo solicitado)
+    return 450.45 # Valor de respaldo (Ejemplo con más decimales: 450,45)
 
 tasa_fija = obtener_tasa()
 
+# Formato de visualización: Coma para decimales y Punto para miles (Ej: 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
