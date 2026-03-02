@@ -171,33 +171,17 @@ if st.session_state.punto_a and st.session_state.punto_b:
 elif not st.session_state.modo_manual and not loc:
     st.info("📡 Obteniendo señal GPS...")
 
- # --- SECCIÓN: CONVERTIR EN APP (GUÍA NATIVA) ---
+# --- SECCIÓN: GUÍA DE INSTALACIÓN REAL ---
 st.divider()
 
-col1, col2 = st.columns([1, 4])
-with col1:
-    st.markdown("<h1 style='text-align: center;'>📲</h1>", unsafe_allow_html=True)
-with col2:
-    st.markdown("### ¡Instala TelRutas en tu Telefono!")
-    st.caption("Accede más rápido sin usar el navegador.")
-
-# Detectamos el sistema operativo con un pequeño truco visual
 st.markdown("""
-    <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #FF7F00;">
-        <p><b>Para instalar esta App ahora:</b></p>
-        <ol>
-            <li>Toca los <b>3 puntos (⋮)</b> o el botón <b>Compartir (↑)</b> de tu navegador.</li>
-            <li>Busca la opción que dice: <b>"Instalar aplicación"</b> o <b>"Añadir a la pantalla de inicio"</b>.</li>
-            <li>¡Listo! El logo de TelRutas aparecerá en tu menú de aplicaciones.</li>
-        </ol>
+    <div style="background-color: #002D62; padding: 20px; border-radius: 15px; text-align: center; color: white;">
+        <h3 style="margin:0;">📲 ¡Ten TelRutas siempre a mano!</h3>
+        <p style="font-size: 0.9em; opacity: 0.9;">Convierte esta página en una App en 2 pasos:</p>
+        <div style="background-color: white; color: #333; padding: 10px; border-radius: 10px; text-align: left; margin-top: 10px;">
+            <b>1.</b> Toca los <b>3 puntos (⋮)</b> o <b>Compartir (↑)</b>.<br>
+            <b>2.</b> Elige <b>"Añadir a pantalla de inicio"</b> o <b>"Instalar"</b>.
+        </div>
+        <p style="margin-top: 15px; font-size: 0.8em;"><i>¡Y listo! Ya no necesitarás abrir el navegador.</i></p>
     </div>
-""", unsafe_allow_html=True)
-
-# Esto fuerza a que la barra de direcciones se oculte cuando la instalen
-st.markdown("""
-    <script>
-    if (window.navigator.standalone) {
-        document.body.style.marginTop = "20px";
-    }
-    </script>
 """, unsafe_allow_html=True)
