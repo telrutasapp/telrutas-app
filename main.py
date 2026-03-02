@@ -43,13 +43,18 @@ st.set_page_config(page_title="TelRutas - Cotizador", layout="centered", initial
 
 st.markdown("""
     <style>
-   /* --- ESTO OCULTA EL BOTÓN NEGRO 'MANAGE APP' Y LAS BARRAS --- */
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
+  /* --- ESTO ELIMINA EL BOTÓN NEGRO Y BARRAS DE UNA VEZ --- */
+    #MainMenu {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    
+    /* Selector específico para el botón de Manage App */
     .stAppDeployButton {display:none !important;}
     [data-testid="stStatusWidget"] {display:none !important;}
     [data-testid="stSidebar"] {display: none !important;}
+    
+    /* Quita el espacio en blanco que deja la barra superior */
+    .stAppHeader {display: none !important;}
 
     /* Estilos Generales que ya tenías... */
     .stApp { background-color: #ffffff; }
@@ -177,12 +182,11 @@ st.divider()
 
 st.markdown("""
     <div style="background-color: #002D62; padding: 20px; border-radius: 15px; text-align: center; color: white;">
-        <h3 style="margin:0;">📲 ¡Ten TelRutas siempre a mano!</h3>
-        <p style="font-size: 0.9em; opacity: 0.9;">Convierte esta página en una App en 2 pasos:</p>
+        <h3 style="margin:0;">📲 ¡Instala TelRutas en tu Telefono!</h3>
+        <p style="font-size: 0.9em; opacity: 0.9;">Accede más rápido sin usar el navegador.</p>
         <div style="background-color: white; color: #333; padding: 10px; border-radius: 10px; text-align: left; margin-top: 10px;">
             <b>1.</b> Toca los <b>3 puntos (⋮)</b> o <b>Compartir (↑)</b>.<br>
             <b>2.</b> Elige <b>"Añadir a pantalla de inicio"</b> o <b>"Instalar"</b>.
         </div>
-        <p style="margin-top: 15px; font-size: 0.8em;"><i>¡Y listo! Ya no necesitarás abrir el navegador.</i></p>
     </div>
 """, unsafe_allow_html=True)
