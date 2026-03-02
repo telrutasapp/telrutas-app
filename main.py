@@ -76,21 +76,27 @@ st.markdown(f"""
 # --- 3. LÓGICA DE TASA BCV ---
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    urls = ["https://www.monitordedivisavenezuela.com/", "https://exchangemonitor.net/dolar-venezuela"]
+    # Usamos fuentes que suelen mostrar montos con más dígitos
+    urls = ["https://exchangemonitor.net/dolar-venezuela", "https://dolartoday.com/"]
     headers = {'User-Agent': 'Mozilla/5.0'}
     for url in urls:
         try:
             response = requests.get(url, headers=headers, timeout=10)
             if response.status_code == 200:
                 import re
-                match = re.search(r'(\d+[\.,]\d+)', response.text)
+                # Ajustado para capturar 2 o 3 cifras antes del decimal (ej: 45,50 o 450,45)
+                match = re.search(r'(\d{2,3}[\.,]\d{2})', response.text)
                 if match:
-                    return float(match.group(1).replace('.', '').replace(',', '.'))
+                    valor_limpio = match.group(1).replace('.', '').replace(',', '.')
+                    return float(valor_limpio)
         except: continue
-    return 42.50 # Respaldo manual
+    return 450.45 # Respaldo con el formato solicitado
 
 tasa_fija = obtener_tasa()
-def f_ve(m): return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
+
+# Función de formato ajustada: Punto para miles, Coma para decimales (Ej: 450,45)
+def f_ve(m): 
+    return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
 st.markdown(f'<div class="tasa-display">📊 Cotización del día: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
