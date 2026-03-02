@@ -43,7 +43,7 @@ st.set_page_config(page_title="TelRutas - Cotizador", layout="centered", initial
 
 st.markdown("""
     <style>
-    /* OCULTAR TODO EL SISTEMA DE STREAMLIT */
+    /* 1. LIMPIEZA TOTAL (Para que no salga el botón negro de Manage App) */
     #MainMenu {visibility: hidden !important;}
     header {visibility: hidden !important;}
     footer {visibility: hidden !important;}
@@ -51,11 +51,32 @@ st.markdown("""
     [data-testid="stStatusWidget"] {display:none !important;}
     [data-testid="stSidebar"] {display: none !important;}
     .stAppHeader {display: none !important;}
-    
-    /* ESTILO DE LA APP */
+
+    /* 2. CONFIGURACIÓN DE COLORES DE BOTONES (AZUL TELRUTAS) */
+    div.stButton > button:first-child {
+        background-color: #002D62 !important; /* Azul Oscuro */
+        color: white !important;               /* Texto Blanco */
+        border-radius: 12px !important;
+        border: 2px solid #002D62 !important;
+        font-weight: bold !important;
+        height: 3em !important;
+        width: 100% !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* 3. COLOR AL PASAR EL MOUSE O TOCAR (NARANJA TELRUTAS) */
+    div.stButton > button:first-child:hover {
+        background-color: #FF7F00 !important; /* Naranja */
+        border-color: #FF7F00 !important;
+        color: white !important;
+    }
+
+    /* 4. ESTILOS DE TEXTO Y CAJAS */
     .stApp { background-color: #ffffff; }
-    /* ... el resto de tus estilos de botones y colores ... */
-    </style>
+    h1, h2, h3, h4 { color: #002D62 !important; }
+    .cotizacion-box { background-color: #f0f4f8; padding: 20px; border-radius: 15px; border-left: 8px solid #FF7F00; border-right: 1px solid #002D62; border-top: 1px solid #002D62; border-bottom: 1px solid #002D62; text-align: center; }
+    .tasa-display { background-color: #e8f4fd; border: 1px solid #002D62; border-radius: 10px; padding: 10px; text-align: center; margin-top: 10px; font-weight: bold; color: #002D62; }
+</style>
 """, unsafe_allow_html=True)
 
 # --- 2. ENCABEZADO: LOGO Y TEXTO ---
