@@ -73,32 +73,38 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE TASA BCV ---
+# --- 3. LÓGICA DE TASA BCV OFICIAL ---
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    # Usamos fuentes que suelen mostrar montos con más dígitos
-    urls = ["https://exchangemonitor.net/dolar-venezuela", "https://dolartoday.com/"]
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    # Fuente específica que reporta el BCV oficial puntualmente
+    urls = [
+        "https://www.bcv.org.ve/", 
+        "https://exchangemonitor.net/dolar-venezuela/bcv"
+    ]
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+    
     for url in urls:
         try:
-            response = requests.get(url, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, timeout=10, verify=False)
             if response.status_code == 200:
                 import re
-                # Ajustado para capturar 2 o 3 cifras antes del decimal (ej: 45,50 o 450,45)
-                match = re.search(r'(\d{2,3}[\.,]\d{2})', response.text)
+                # Buscamos el patrón numérico del BCV (ej: 45,50 o 450,45)
+                # El regex busca 2 o 3 dígitos, coma, y 2 decimales
+                match = re.search(r'(\d{2,3},\d{2})', response.text)
                 if match:
-                    valor_limpio = match.group(1).replace('.', '').replace(',', '.')
+                    # Convertimos el formato de coma (venezolano) a punto (Python) para calcular
+                    valor_limpio = match.group(1).replace(',', '.')
                     return float(valor_limpio)
         except: continue
-    return 450.45 # Respaldo con el formato solicitado
+    return 450.45 # Valor de respaldo con el formato que me pediste
 
 tasa_fija = obtener_tasa()
 
-# Función de formato ajustada: Punto para miles, Coma para decimales (Ej: 450,45)
+# Función de formato: Punto para miles, Coma para decimales (Ej: 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
-st.markdown(f'<div class="tasa-display">📊 Cotización del día: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # --- 4. REGISTRO CLIENTE ---
