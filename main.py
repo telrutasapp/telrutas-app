@@ -11,73 +11,58 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-# --- INICIO DE INTERFAZ MINIMALISTA (TELRUTAS) ---
-
-# 1. Definimos el CSS para botones cuadrados y colores exactos
+# --- SOLO BOTONES DE CONTROL (SIN TOCAR NADA MÁS) ---
 st.markdown("""
 <style>
-    /* Estilo general para los botones de control */
-    .stButton > button {
-        width: 80px !important; /* Ancho fijo para hacerlo cuadrado */
-        height: 80px !important; /* Alto fijo */
-        border-radius: 10px !important; /* Bordes ligeramente suaves, pero cuadrados */
+    /* Estilo exclusivo para los dos botones de control */
+    div.stButton > button[key^="btn_control_"] {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 8px !important;
         border: none !important;
-        font-size: 30px !important; /* Tamaño del icono grande */
-        display: flex !important;
+        font-size: 22px !important;
+        display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin-bottom: 10px !important;
+        padding: 0px !important;
     }
 
-    /* Color NARANJA para el botón de MENÚ */
-    .boton-naranja > div > button {
-        background-color: #FF7F00 !important; /* Naranja exacto */
+    /* Botón REINICIO (Naranja #FF7F00) */
+    button[key="btn_control_reinicio"] {
+        background-color: #FF7F00 !important;
         color: white !important;
-    }
-    .boton-naranja > div > button:hover {
-        background-color: #E67200 !important; /* Naranja un poco más oscuro al pasar el mouse */
     }
 
-    /* Color AZUL para el botón de ACTUALIZAR */
-    .boton-azul > div > button {
-        background-color: #00569E !important; /* Azul del logo exacto */
+    /* Botón MENÚ (Azul #00569E) */
+    button[key="btn_control_menu"] {
+        background-color: #00569E !important;
         color: white !important;
-    }
-    .boton-azul > div > button:hover {
-        background-color: #004580 !important; /* Azul un poco más oscuro al pasar el mouse */
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Creamos columnas para ubicar los botones a la izquierda
-# st.columns([1, 1, 10]) crea 3 columnas, las dos primeras pequeñas (para botones) y la tercera grande (vacía)
-col1, col2, col3 = st.columns([1, 1, 10])
+# Crear la fila de botones arriba a la izquierda
+col_btn, _ = st.columns([1, 5])
 
-with col1:
-    # Botón de ACTUALIZAR (Azul del logo, solo icono)
-    st.markdown('<div class="boton-azul">', unsafe_allow_html=True)
-    if st.button("🔄", help="Actualizar Aplicación"):
+with col_btn:
+    # Contenedor para ponerlos uno al lado del otro
+    st.write('<div style="display: flex; gap: 10px;">', unsafe_allow_html=True)
+    
+    # BOTÓN NARANJA: REINICIO / ACTUALIZAR APLICACIÓN
+    if st.button("🔄", key="btn_control_reinicio"):
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col2:
-    # Botón de MENÚ (Naranja, solo icono)
-    st.markdown('<div class="boton-naranja">', unsafe_allow_html=True)
-    if st.button("☰", help="Menú de Instalación"):
-        # Lógica para mostrar/ocultar el QR
+        
+    # BOTÓN AZUL: MENÚ / QR
+    if st.button("☰", key="btn_control_menu"):
         if "mostrar_qr" not in st.session_state:
             st.session_state.mostrar_qr = False
         st.session_state.mostrar_qr = not st.session_state.mostrar_qr
-    st.markdown('</div>', unsafe_allow_html=True)
+        
+    st.write('</div>', unsafe_allow_html=True)
 
-# 3. Sección del QR (Naranja, solo si se activa)
-if "mostrar_qr" in st.session_state and st.session_state.mostrar_qr:
-    with st.container(border=True):
-        st.write("### 📥 Descarga la App para Android")
-        st.image("qr_descarga.png", caption="Escanea el QR para instalar telrutas.apk", width=300)
-        st.info("💡 Se descargará el archivo .apk directamente a tu teléfono.")
-
-# --- FIN DE INTERFAZ MINIMALISTA (CONTINÚA TU CÓDIGO) ---
+# Mostrar el QR solo si se activa el botón azul
+if st.session_state.get("mostrar_qr", False):
+    st.image("qr_descarga.png", width=250)
 
 # --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
 def cargar_config():
