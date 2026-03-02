@@ -11,57 +11,45 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-# --- SOLO BOTONES DE CONTROL (SIN TOCAR NADA MÁS) ---
+# --- SOLO ICONOS DE CONTROL (SIN TEXTO) ---
 st.markdown("""
 <style>
-    /* Estilo exclusivo para los dos botones de control */
-    div.stButton > button[key^="btn_control_"] {
+    /* Estilo para los dos botones cuadrados de 50px */
+    div.stButton > button[key^="ctrl_"] {
         width: 50px !important;
         height: 50px !important;
+        padding: 0px !important;
         border-radius: 8px !important;
         border: none !important;
-        font-size: 22px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 0px !important;
+        font-size: 24px !important;
     }
-
-    /* Botón REINICIO (Naranja #FF7F00) */
-    button[key="btn_control_reinicio"] {
-        background-color: #FF7F00 !important;
-        color: white !important;
-    }
-
-    /* Botón MENÚ (Azul #00569E) */
-    button[key="btn_control_menu"] {
-        background-color: #00569E !important;
-        color: white !important;
-    }
+    /* MENÚ: Azul (#00569E) */
+    button[key="ctrl_menu"] { background-color: #00569E !important; color: white !important; }
+    /* REINICIO: Naranja (#FF7F00) */
+    button[key="ctrl_reset"] { background-color: #FF7F00 !important; color: white !important; }
+    
+    /* Contenedor para alinearlos horizontalmente */
+    .contenedor-iconos { display: flex; gap: 10px; margin-bottom: 15px; }
 </style>
 """, unsafe_allow_html=True)
 
-# Crear la fila de botones arriba a la izquierda
-col_btn, _ = st.columns([1, 5])
-
-with col_btn:
-    # Contenedor para ponerlos uno al lado del otro
-    st.write('<div style="display: flex; gap: 10px;">', unsafe_allow_html=True)
+# Fila de iconos en la parte superior izquierda
+col_iconos, _ = st.columns([1, 4])
+with col_iconos:
+    st.markdown('<div class="contenedor-iconos">', unsafe_allow_html=True)
     
-    # BOTÓN NARANJA: REINICIO / ACTUALIZAR APLICACIÓN
-    if st.button("🔄", key="btn_control_reinicio"):
+    # Icono Menú (Azul)
+    if st.button("☰", key="ctrl_menu"):
+        st.session_state.ver_qr = not st.session_state.get("ver_qr", False)
+        
+    # Icono Reinicio (Naranja)
+    if st.button("🔄", key="ctrl_reset"):
         st.rerun()
         
-    # BOTÓN AZUL: MENÚ / QR
-    if st.button("☰", key="btn_control_menu"):
-        if "mostrar_qr" not in st.session_state:
-            st.session_state.mostrar_qr = False
-        st.session_state.mostrar_qr = not st.session_state.mostrar_qr
-        
-    st.write('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Mostrar el QR solo si se activa el botón azul
-if st.session_state.get("mostrar_qr", False):
+# Mostrar el QR si se pulsa el icono azul
+if st.session_state.get("ver_qr", False):
     st.image("qr_descarga.png", width=250)
 
 # --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
