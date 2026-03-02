@@ -73,50 +73,46 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE TASA BCV OFICIAL ---
+# --- 3. LÓGICA DE TASA BCV OFICIAL (DÓLAR) ---
 @st.cache_data(ttl=300)
 def obtener_tasa():
-    # Fuente específica que reporta el BCV oficial puntualmente
-    urls = [
-        "https://www.bcv.org.ve/", 
-        "https://exchangemonitor.net/dolar-venezuela/bcv"
-    ]
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-    
-    for url in urls:
-        try:
-            response = requests.get(url, headers=headers, timeout=10, verify=False)
-            if response.status_code == 200:
-                import re
-                # Buscamos el patrón numérico del BCV (ej: 45,50 o 450,45)
-                # El regex busca 2 o 3 dígitos, coma, y 2 decimales
-                match = re.search(r'(\d{2,3},\d{2})', response.text)
-                if match:
-                    # Convertimos el formato de coma (venezolano) a punto (Python) para calcular
-                    valor_limpio = match.group(1).replace(',', '.')
-                    return float(valor_limpio)
-        except: continue
-    return 450.45 # Valor de respaldo con el formato que me pediste
+    # Fuente que separa claramente Dólar de Euro
+    url = "https://exchangemonitor.net/dolar-venezuela/bcv"
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            import re
+            # Buscamos el monto que esté cerca de la palabra USD o Dólar
+            # Esto evita que capturemos el Euro por error
+            texto = response.text
+            match = re.search(r'USD.*?(\d{2,3}[\.,]\d{2})', texto, re.DOTALL)
+            if not match:
+                match = re.search(r'(\d{2,3}[\.,]\d{2})', texto) # Fallback si no halla USD
+            
+            if match:
+                valor_limpio = match.group(1).replace('.', '').replace(',', '.')
+                return float(valor_limpio)
+    except: pass
+    return 450.45 # Respaldo manual (Ejemplo solicitado)
 
 tasa_fija = obtener_tasa()
 
-# Función de formato: Punto para miles, Coma para decimales (Ej: 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
-st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV (USD): {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- 4. REGISTRO CLIENTE ---
+# --- 4. REGISTRO CLIENTE (CON ETIQUETAS DENTRO) ---
 st.subheader("👤 Registro Cliente:")
 col_nom, col_tel = st.columns(2)
-nombre_cliente = col_nom.text_input("Nombre y Apellido *")
-telefono_cliente = col_tel.text_input("Teléfono de contacto *")
+# Agregamos 'placeholder' para que el texto aparezca dentro de la casilla
+nombre_cliente = col_nom.text_input("Nombre y Apellido *", placeholder="Escriba su Nombre y Apellido")
+telefono_cliente = col_tel.text_input("Teléfono de contacto *", placeholder="Ej: 04141234567")
 
 if not nombre_cliente or not telefono_cliente:
-    st.error("⚠️ Complete su Nombre y Teléfono para solicitar.")
-
-st.divider()
+    st.error("⚠️ Complete su Nombre y Teléfono para solicitar el servicio.")
 
 # --- 5. SELECCIÓN DE SERVICIO ---
 st.subheader("Seleccione el servicio:")
