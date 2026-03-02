@@ -43,14 +43,15 @@ st.set_page_config(page_title="TelRutas - Cotizador", layout="centered", initial
 
 st.markdown("""
     <style>
-    /* Ocultar elementos de Streamlit y el Sidebar por completo */
+   /* --- ESTO OCULTA EL BOTÓN NEGRO 'MANAGE APP' Y LAS BARRAS --- */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
-    .stDeployButton {display:none;}
-    [data-testid="stSidebar"] {display: none;} 
+    .stAppDeployButton {display:none !important;}
+    [data-testid="stStatusWidget"] {display:none !important;}
+    [data-testid="stSidebar"] {display: none !important;}
 
-    /* Estilos Generales */
+    /* Estilos Generales que ya tenías... */
     .stApp { background-color: #ffffff; }
     h1, h2, h3, h4 { color: #002D62 !important; }
     .stButton>button { background-color: #002D62; color: white; border-radius: 10px; border: 2px solid #002D62; font-weight: bold; }
