@@ -11,46 +11,73 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-# --- SOLO ICONOS DE CONTROL (SIN TEXTO) ---
+import streamlit as st
+
+# --- ESTILO PARA EL MENÚ PROFESIONAL ---
 st.markdown("""
 <style>
-    /* Estilo para los dos botones cuadrados de 50px */
-    div.stButton > button[key^="ctrl_"] {
-        width: 50px !important;
-        height: 50px !important;
-        padding: 0px !important;
-        border-radius: 8px !important;
-        border: none !important;
-        font-size: 24px !important;
+    /* Estilo del botón principal del Menú */
+    div.stButton > button[key="btn_principal"] {
+        background-color: #00569E !important;
+        color: white !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important; /* Circular para que parezca un botón flotante */
+        font-size: 25px !important;
     }
-    /* MENÚ: Azul (#00569E) */
-    button[key="ctrl_menu"] { background-color: #00569E !important; color: white !important; }
-    /* REINICIO: Naranja (#FF7F00) */
-    button[key="ctrl_reset"] { background-color: #FF7F00 !important; color: white !important; }
-    
-    /* Contenedor para alinearlos horizontalmente */
-    .contenedor-iconos { display: flex; gap: 10px; margin-bottom: 15px; }
+    /* Estilo de los botones internos del menú */
+    .stButton > button {
+        border-radius: 8px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Fila de iconos en la parte superior izquierda
-col_iconos, _ = st.columns([1, 4])
-with col_iconos:
-    st.markdown('<div class="contenedor-iconos">', unsafe_allow_html=True)
-    
-    # Icono Menú (Azul)
-    if st.button("☰", key="ctrl_menu"):
-        st.session_state.ver_qr = not st.session_state.get("ver_qr", False)
-        
-    # Icono Reinicio (Naranja)
-    if st.button("🔄", key="ctrl_reset"):
-        st.rerun()
-        
-    st.markdown('</div>', unsafe_allow_html=True)
+# --- LÓGICA DEL MENÚ ---
+if "menu_abierto" not in st.session_state:
+    st.session_state.menu_abierto = False
 
-# Mostrar el QR si se pulsa el icono azul
-if st.session_state.get("ver_qr", False):
-    st.image("qr_descarga.png", width=250)
+# Botón principal en la esquina superior
+if st.button("☰", key="btn_principal"):
+    st.session_state.menu_abierto = not st.session_state.menu_abierto
+
+if st.session_state.menu_abierto:
+    with st.container(border=True):
+        col_m1, col_m2, col_m3 = st.columns(3)
+        
+        with col_m1:
+            if st.button("🔄 Actualizar", use_container_width=True):
+                st.rerun()
+        
+        with col_m2:
+            if st.button("📥 Descargar", use_container_width=True):
+                st.session_state.ver_qr = not st.session_state.get("ver_qr", False)
+                st.session_state.ver_ayuda = False
+        
+        with col_m3:
+            if st.button("❓ Ayuda", use_container_width=True):
+                st.session_state.ver_ayuda = not st.session_state.get("ver_ayuda", False)
+                st.session_state.ver_qr = False
+
+        # --- SECCIÓN DINÁMICA: QR CENTRADO ---
+        if st.session_state.get("ver_qr", False):
+            st.markdown("---")
+            st.markdown("<h3 style='text-align: center;'>Escanea para Descargar</h3>", unsafe_allow_html=True)
+            _, col_qr, _ = st.columns([1, 2, 1])
+            with col_qr:
+                st.image("qr_descarga.png", use_container_width=True)
+            st.markdown("<p style='text-align: center;'>TelRutas APK (Versión Oficial)</p>", unsafe_allow_html=True)
+
+        # --- SECCIÓN DINÁMICA: AYUDA DE INSTALACIÓN ---
+        if st.session_state.get("ver_ayuda", False):
+            st.markdown("---")
+            st.info("""
+            **Guía de Instalación (Fuera de Google Play):**
+            1. **Descarga:** Escanea el QR en la sección 'Descargar'.
+            2. **Permisos:** Si tu teléfono dice 'Archivo dañino', elige **'Descargar de todos modos'** (es seguro).
+            3. **Instalación:** Abre el archivo `telrutas.apk`.
+            4. **Orígenes Desconocidos:** Si el sistema te lo pide, activa 'Permitir desde esta fuente' en los ajustes de tu navegador.
+            5. **Listo:** ¡Abre la app e inicia sesión!
+            """)
 
 # --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
 def cargar_config():
