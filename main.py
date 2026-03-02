@@ -10,6 +10,7 @@ import os
 import requests
 import json
 from bs4 import BeautifulSoup
+
 import streamlit as st
 
 # --- AJUSTE DE ESPACIO SUPERIOR (FUERZA BRUTA) ---
@@ -83,10 +84,25 @@ if st.session_state.menu_abierto:
                 st.session_state.ver_ayuda = not st.session_state.get("ver_ayuda", False)
                 st.session_state.ver_qr = False
 
-        # --- SECCIÓN DINÁMICA: QR CENTRADO ---
+        # --- SECCIÓN DINÁMICA: QR Y BOTÓN DE INSTALACIÓN ---
         if st.session_state.get("ver_qr", False):
             st.markdown("---")
-            st.markdown("<h3 style='text-align: center;'>Escanea para Descargar</h3>", unsafe_allow_html=True)
+            
+            # 1. BOTÓN DE INSTALACIÓN DIRECTA (Para el usuario que está en el móvil)
+            try:
+                with open("telrutas.apk", "rb") as file:
+                    st.download_button(
+                        label="🚀 CLIC AQUÍ PARA INSTALAR APK",
+                        data=file,
+                        file_name="telrutas.apk",
+                        mime="application/vnd.android.package-archive",
+                        use_container_width=True
+                    )
+            except FileNotFoundError:
+                st.error("⚠️ El archivo 'telrutas.apk' no se encontró en la carpeta.")
+
+            # 2. QR PARA ESCANEAR (Para el usuario que está frente a una PC)
+            st.markdown("<h3 style='text-align: center;'>O Escanea para Descargar</h3>", unsafe_allow_html=True)
             _, col_qr, _ = st.columns([1, 2, 1])
             with col_qr:
                 st.image("qr_descarga.png", use_container_width=True)
@@ -97,11 +113,10 @@ if st.session_state.menu_abierto:
             st.markdown("---")
             st.info("""
             **Guía de Instalación (Fuera de Google Play):**
-            1. **Descarga:** Escanea el QR en la sección 'Descargar'.
-            2. **Permisos:** Si tu teléfono dice 'Archivo dañino', elige **'Descargar de todos modos'** (es seguro).
-            3. **Instalación:** Abre el archivo `telrutas.apk`.
-            4. **Orígenes Desconocidos:** Si el sistema te lo pide, activa 'Permitir desde esta fuente' en los ajustes de tu navegador.
-            5. **Listo:** ¡Abre la app e inicia sesión!
+            1. **Descarga:** Dale al botón 'INSTALAR' o escanea el QR.
+            2. **Permisos:** Si tu teléfono dice 'Archivo dañino', elige **'Descargar de todos modos'**.
+            3. **Instalación:** Al terminar, toca la notificación o busca `telrutas.apk` en tu carpeta de descargas.
+            4. **Orígenes Desconocidos:** Activa 'Permitir desde esta fuente' si el sistema lo solicita.
             """)
 
 # --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
