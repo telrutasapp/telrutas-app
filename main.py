@@ -11,6 +11,24 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
+# 1. BOTÓN AZUL (ACTUALIZAR APLICACIÓN)
+if st.button("🔄 ACTUALIZAR APLICACIÓN", use_container_width=True, type="primary"):
+    st.rerun()
+
+# 2. LÓGICA DEL BOTÓN NARANJA (MENÚ QR)
+if "mostrar_qr" not in st.session_state:
+    st.session_state.mostrar_qr = False
+
+if st.button("☰ MENÚ DE INSTALACIÓN", use_container_width=True):
+    st.session_state.mostrar_qr = not st.session_state.mostrar_qr
+
+# Mostrar el QR si se activa el botón naranja
+if st.session_state.mostrar_qr:
+    with st.container(border=True):
+        st.write("### 📥 Descarga para Android")
+        st.image("qr_descarga.png", caption="Escanea para bajar el archivo .apk", use_container_width=True)
+        st.info("💡 Al escanear, se descargará el archivo 'telrutas.apk' directamente.")
+
 # --- CONFIGURACIÓN PARA FORZAR EL ICONO NUEVO ---
 st.markdown("""
     <head>
