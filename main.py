@@ -196,24 +196,20 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # --- 3. LÓGICA DE ACTUALIZACIÓN AUTOMÁTICA BCV ---
-@st.cache_data(ttl=300)
+st.cache_data.clear()
+
 def obtener_tasa():
-    url = "https://exchangemonitor.net/dolar-venezuela/bcv"
-    headers = {'User-Agent': 'Mozilla/5.0'}
+    # Intentamos leer de los Secrets, si falla o no existe, usamos 450.45
     try:
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            import re
-            match = re.search(r'USD.*?(\d+,\d+)', response.text, re.DOTALL)
-            if match:
-                return float(match.group(1).replace(',', '.'))
-    except: pass
-    return 450.45 # <--- CAMBIÉ ESTO: Tu nuevo valor de respaldo
+        # Buscamos 'TASA_DIA' en la web de Streamlit
+        return float(st.secrets["TASA_DIA"])
+    except:
+        # Si el Secret falla, ESTE número es el que mandará
+        return 450.45 
 
-# PRIORIDAD: 1. Secrets de la web, 2. Internet, 3. El 450.45 de arriba
-tasa_fija = st.secrets.get("TASA_DIA", obtener_tasa())
+tasa_fija = obtener_tasa()
 
-# Formato de salida: Siempre con coma decimal (Ej: 450,45)
+# Formato con coma (Ej: 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
