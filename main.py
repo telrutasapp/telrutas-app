@@ -210,8 +210,12 @@ def obtener_tasa():
 tasa_fija = obtener_tasa()
 
 # Formato con coma (Ej: 450,45)
+# Esta función convierte el 450.45 (punto) en 450,45 (coma) para el público
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
+
+# Y llama a la tasa desde los Secrets así:
+tasa_fija = float(st.secrets.get("TASA_DIA", 450.45))
 
 st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
