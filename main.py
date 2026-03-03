@@ -72,6 +72,10 @@ if st.session_state.menu_abierto:
         
         with col_m1:
             if st.button("🔄 Actualizar", use_container_width=True):
+                # Esto borra la memoria guardada del servidor
+                st.cache_data.clear() 
+                st.cache_resource.clear()
+                # Esto reinicia la App para mostrar el cambio
                 st.rerun()
         
         with col_m2:
