@@ -195,28 +195,25 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE ACTUALIZACIÓN AUTOMÁTICA BCV ---
-st.cache_data.clear()
+# --- 3. LÓGICA DE ACTUALIZACIÓN DE TASA (SECRETS + MANUAL) ---
 
-def obtener_tasa():
-    # Intentamos leer de los Secrets, si falla o no existe, usamos 450.45
+# Función para obtener el valor numérico (siempre con punto decimal internamente)
+def obtener_tasa_numerica():
     try:
-        # Buscamos 'TASA_DIA' en la web de Streamlit
+        # Intenta leer el Secret "TASA_DIA" (debe estar como 450.45 en la web)
         return float(st.secrets["TASA_DIA"])
     except:
-        # Si el Secret falla, ESTE número es el que mandará
-        return 450.45 
+        # Valor de respaldo manual en el código si el Secret falla
+        return 450.45
 
-tasa_fija = obtener_tasa()
+# Asignamos el valor a la variable que usará toda la App
+tasa_fija = obtener_tasa_numerica()
 
-# Formato con coma (Ej: 450,45)
-# Esta función convierte el 450.45 (punto) en 450,45 (coma) para el público
+# FUNCIÓN MAESTRA DE FORMATO: Convierte puntos en comas para el público (450.45 -> 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
-# Y llama a la tasa desde los Secrets así:
-tasa_fija = float(st.secrets.get("TASA_DIA", 450.45))
-
+# MOSTRAR EN PANTALLA
 st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
