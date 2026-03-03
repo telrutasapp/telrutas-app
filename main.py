@@ -196,7 +196,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # --- 3. LÓGICA DE ACTUALIZACIÓN AUTOMÁTICA BCV ---
-# ttl=300 hace que la app revise la página cada 5 minutos por cambios
 @st.cache_data(ttl=300)
 def obtener_tasa():
     url = "https://exchangemonitor.net/dolar-venezuela/bcv"
@@ -205,18 +204,16 @@ def obtener_tasa():
         response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             import re
-            # Captura el primer número con coma que aparezca después de la palabra USD
-            # Esto garantiza que tome el Dólar y no el Euro de tu imagen
             match = re.search(r'USD.*?(\d+,\d+)', response.text, re.DOTALL)
             if match:
-                # Extrae el número, quita la coma y lo hace funcional
                 return float(match.group(1).replace(',', '.'))
     except: pass
-    return 419.98 # Valor de respaldo si la web cae
+    return 450.45 # <--- CAMBIÉ ESTO: Tu nuevo valor de respaldo
 
-tasa_fija = obtener_tasa()
+# PRIORIDAD: 1. Secrets de la web, 2. Internet, 3. El 450.45 de arriba
+tasa_fija = st.secrets.get("TASA_DIA", obtener_tasa())
 
-# Formato de salida: Siempre con coma decimal (Ej: 419,98)
+# Formato de salida: Siempre con coma decimal (Ej: 450,45)
 def f_ve(m): 
     return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
 
