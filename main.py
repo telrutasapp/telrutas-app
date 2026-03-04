@@ -269,7 +269,7 @@ if st.session_state.tipo == "Encomienda":
     # ... después del bloque de "Encomienda"
 
 if st.session_state.tipo == "Traslado":
-    st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 DETALLES DEL TRASLADO</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 Nro. personas</p>", unsafe_allow_html=True)
     
     # Entrada estrictamente numérica para personas
     num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
