@@ -271,23 +271,21 @@ if st.session_state.tipo == "Encomienda":
 if st.session_state.tipo == "Traslado":
     st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 Nro. personas</p>", unsafe_allow_html=True)
     
-    # Entrada estrictamente numérica
+    # Entrada estrictamente numérica para personas
     num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
     
-    # Se obtiene el valor del recargo desde los secrets
-    valor_extra = config.get('recargo_pasajero_extra', 1.50) 
+    # SE OBTIENE ESTRICTAMENTE DESDE LOS SECRETS
+    # Accedemos a st.secrets para que sea administrable desde la nube
+    valor_extra = st.secrets.get('recargo_pasajero_extra', 1.50) 
     
     if num_personas > 2:
         cantidad_extras = num_personas - 2
-        # El recargo se calcula internamente pero ya no se muestra en pantalla
+        # El cálculo es interno, no genera mensajes en pantalla
         recargo_fijo = cantidad_extras * valor_extra
     else:
         recargo_fijo = 0.0
 
-    # Detalle estrictamente numérico para el mensaje de WhatsApp
-    detalle_paquete = str(num_personas)
-
-    # DETALLE ESTRICTAMENTE NUMÉRICO PARA EL MENSAJE
+    # DETALLE ESTRICTAMENTE NUMÉRICO PARA EL MENSAJE DE WHATSAPP
     detalle_paquete = str(num_personas)
 
 # --- 6. RUTA Y MAPA ---
