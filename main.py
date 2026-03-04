@@ -274,20 +274,18 @@ if st.session_state.tipo == "Traslado":
     # Entrada estrictamente numérica
     num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
     
-    # Obtención desde secrets
+    # Se obtiene el valor del recargo desde los secrets
     valor_extra = config.get('recargo_pasajero_extra', 1.50) 
     
     if num_personas > 2:
         cantidad_extras = num_personas - 2
+        # El recargo se calcula internamente pero ya no se muestra en pantalla
         recargo_fijo = cantidad_extras * valor_extra
-        
-        # Aplicamos el formato de más decimales con coma (ej. 1,50)
-        recargo_str = f"{recargo_fijo:.2f}".replace('.', ',')
-        
-        # USAMOS MARKDOWN PARA ELIMINAR EL RECUADRO AMARILLO
-        st.markdown(f"<p style='color:#FF0000; font-weight:bold;'>⚠️ Recargo de ${recargo_str} aplicado por pasajeros adicionales.</p>", unsafe_allow_html=True)
     else:
         recargo_fijo = 0.0
+
+    # Detalle estrictamente numérico para el mensaje de WhatsApp
+    detalle_paquete = str(num_personas)
 
     # DETALLE ESTRICTAMENTE NUMÉRICO PARA EL MENSAJE
     detalle_paquete = str(num_personas)
