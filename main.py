@@ -271,20 +271,21 @@ if st.session_state.tipo == "Encomienda":
 if st.session_state.tipo == "Traslado":
     st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 Nro. personas</p>", unsafe_allow_html=True)
     
-    # Entrada estrictamente numérica para personas
+    # Entrada estrictamente numérica
     num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
     
-    # SE OBTIENE DESDE LOS SECRETS (config)
-    # Si no existe en secrets, usa 1.50 como respaldo
+    # Obtención desde secrets
     valor_extra = config.get('recargo_pasajero_extra', 1.50) 
     
     if num_personas > 2:
         cantidad_extras = num_personas - 2
         recargo_fijo = cantidad_extras * valor_extra
         
-        # Formato de visualización profesional (ej. 1,50)
+        # Aplicamos el formato de más decimales con coma (ej. 1,50)
         recargo_str = f"{recargo_fijo:.2f}".replace('.', ',')
-        st.warning(f"Recargo de ${recargo_str} aplicado por pasajeros adicionales.")
+        
+        # USAMOS MARKDOWN PARA ELIMINAR EL RECUADRO AMARILLO
+        st.markdown(f"<p style='color:#FF0000; font-weight:bold;'>⚠️ Recargo de ${recargo_str} aplicado por pasajeros adicionales.</p>", unsafe_allow_html=True)
     else:
         recargo_fijo = 0.0
 
