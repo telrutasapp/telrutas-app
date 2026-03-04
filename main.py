@@ -240,22 +240,22 @@ if 'tipo' not in st.session_state: st.session_state.tipo = "Traslado"
 if c1.button("🚗 TRASLADO PERSONA", use_container_width=True): st.session_state.tipo = "Traslado"
 if c2.button("📦 ENVIAR ENCOMIENDA", use_container_width=True): st.session_state.tipo = "Encomienda"
 
+# INICIALIZACIÓN: Esto evita el NameError
 recargo_fijo = 0.0
 detalle_paquete = ""
+detalle_personas = "0"  # Se inicializa para que el mensaje de WhatsApp no falle
+
 if st.session_state.tipo == "Encomienda":
     st.markdown("<p style='color:#FF7F00; font-weight:bold;'>📦 DETALLES DE ENCOMIENDA</p>", unsafe_allow_html=True)
     
-    # Campo para que escriban qué es el paquete
     desc_prod = st.text_input("¿Qué producto envía?", placeholder="Ej: Repuestos, documentos, comida...")
     
-    # Selector con los kilos detallados que pediste
     opcion = st.selectbox("Seleccione el Peso:", [
         f"Ligero (Hasta 2 kg) +${config['recargo_ligero']:.2f}", 
         f"Mediano (Hasta 20 kg) +${config['recargo_mediano']:.2f}", 
         f"Pesado (Hasta 50 kg) +${config['recargo_pesado']:.2f}"
     ])
     
-    # Lógica de recargo (se mantiene igual, buscando la palabra clave)
     if "Ligero" in opcion:
         recargo_fijo = config["recargo_ligero"]
     elif "Mediano" in opcion:
@@ -263,30 +263,25 @@ if st.session_state.tipo == "Encomienda":
     else:
         recargo_fijo = config["recargo_pesado"]
     
-    # Guardamos la descripción y el peso para el mensaje de WhatsApp
     detalle_paquete = f"{desc_prod} ({opcion})"
-
-    # ... después del bloque de "Encomienda"
+    detalle_personas = "N/A" # En encomienda no aplica conteo de personas
 
 if st.session_state.tipo == "Traslado":
     st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 Nro. personas</p>", unsafe_allow_html=True)
     
-    # Entrada estrictamente numérica para personas
     num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
     
-    # SE OBTIENE ESTRICTAMENTE DESDE LOS SECRETS
-    # Accedemos a st.secrets para que sea administrable desde la nube
+    # Obtención desde secrets (actualización de la aplicación)
     valor_extra = st.secrets.get('recargo_pasajero_extra', 1.50) 
     
     if num_personas > 2:
-        cantidad_extras = num_personas - 2
-        # El cálculo es interno, no genera mensajes en pantalla
-        recargo_fijo = cantidad_extras * valor_extra
+        recargo_fijo = (num_personas - 2) * valor_extra
     else:
         recargo_fijo = 0.0
 
-    # DETALLE ESTRICTAMENTE NUMÉRICO PARA EL MENSAJE DE WHATSAPP
+    # ASIGNACIÓN PARA EL MENSAJE: Ambos deben ser el número de personas
     detalle_paquete = str(num_personas)
+    detalle_personas = str(num_personas)
 
 # --- 6. RUTA Y MAPA ---
 st.subheader("📍 Definir Ruta")
