@@ -220,12 +220,18 @@ st.markdown("<br>", unsafe_allow_html=True)
 # --- 4. REGISTRO CLIENTE (CON ETIQUETAS DENTRO) ---
 st.subheader("👤 Registro Cliente:")
 col_nom, col_tel = st.columns(2)
-# Agregamos 'placeholder' para que el texto aparezca dentro de la casilla
-nombre_cliente = col_nom.text_input("Nombre y Apellido *", placeholder="Escriba su Nombre y Apellido")
-telefono_cliente = col_tel.text_input("Teléfono de contacto *", placeholder="Ej: 04141234567")
 
-if not nombre_cliente or not telefono_cliente:
-    st.error("⚠️ Complete su Nombre y Teléfono para solicitar el servicio.")
+nombre_cliente = col_nom.text_input("Nombre y Apellido *", placeholder="Escriba su Nombre y Apellido")
+telefono_input = col_tel.text_input("Teléfono de contacto *", placeholder="Ej: 04141234567")
+
+# Filtro para que el teléfono sea estrictamente numérico
+telefono_cliente = "".join(filter(str.isdigit, telefono_input))
+
+# Validación con estilo personalizado (Sin recuadro, solo texto rojo e ícono)
+if not nombre_cliente or not telefono_input:
+    st.markdown("<p style='color:#FF0000; font-weight:bold;'>⚠️ Complete su Nombre y Teléfono para solicitar el servicio.</p>", unsafe_allow_html=True)
+elif telefono_input and not telefono_cliente:
+    st.markdown("<p style='color:#FF0000; font-weight:bold;'>⚠️ El teléfono debe contener estrictamente solo números.</p>", unsafe_allow_html=True)
 
 # --- 5. SELECCIÓN DE SERVICIO ---
 st.subheader("Seleccione el servicio:")
@@ -259,6 +265,31 @@ if st.session_state.tipo == "Encomienda":
     
     # Guardamos la descripción y el peso para el mensaje de WhatsApp
     detalle_paquete = f"{desc_prod} ({opcion})"
+
+    # ... después del bloque de "Encomienda"
+
+if st.session_state.tipo == "Traslado":
+    st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 DETALLES DEL TRASLADO</p>", unsafe_allow_html=True)
+    
+    # Entrada estrictamente numérica para personas
+    num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
+    
+    # SE OBTIENE DESDE LOS SECRETS (config)
+    # Si no existe en secrets, usa 1.50 como respaldo
+    valor_extra = config.get('recargo_pasajero_extra', 1.50) 
+    
+    if num_personas > 2:
+        cantidad_extras = num_personas - 2
+        recargo_fijo = cantidad_extras * valor_extra
+        
+        # Formato de visualización profesional (ej. 1,50)
+        recargo_str = f"{recargo_fijo:.2f}".replace('.', ',')
+        st.warning(f"Recargo de ${recargo_str} aplicado por pasajeros adicionales.")
+    else:
+        recargo_fijo = 0.0
+
+    # DETALLE ESTRICTAMENTE NUMÉRICO PARA EL MENSAJE
+    detalle_paquete = str(num_personas)
 
 # --- 6. RUTA Y MAPA ---
 st.subheader("📍 Definir Ruta")
@@ -319,6 +350,7 @@ if st.session_state.punto_a and st.session_state.punto_b:
             f"📞 *TEL:* {telefono_cliente}\n"
             f"🛠️ *SERVICIO:* {st.session_state.tipo}\n"
             f"📦 *PAQUETE:* {detalle_paquete}\n"
+            f"👥 *Pasajeros:* {detalle_personas}\n"
             f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
             f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
             f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
