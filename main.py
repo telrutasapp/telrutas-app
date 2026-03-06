@@ -336,9 +336,8 @@ if st.session_state.punto_a and st.session_state.punto_b:
         st.session_state.punto_a = st.session_state.punto_b = None
         st.rerun()
 
-   # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP (CORREGIDO) ---
+   # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP ---
     if nombre_cliente and telefono_cliente:
-        # 1. Encabezado común
         msg = (
             f"¡Hola TelRutas! 👋\n"
             f"👤 *CLIENTE:* {nombre_cliente}\n"
@@ -346,15 +345,15 @@ if st.session_state.punto_a and st.session_state.punto_b:
             f"🛠️ *SERVICIO:* {st.session_state.tipo.upper()}\n"
         )
 
-        # 2. LÓGICA DINÁMICA: Aquí eliminamos la palabra "Paquete" en traslados
-        if st.session_state.tipo == "Traslado":
-            # Si es traslado, SOLO muestra pasajeros
-            msg += f"👥 *PASAJEROS:* {detalle_personas}\n"
-        else:
-            # Si es encomienda, SOLO muestra paquete
+        # Lógica para mostrar la descripción en Encomienda o solo personas en Traslado
+        if st.session_state.tipo == "Encomienda":
+            # Aquí saldrá: "📦 PAQUETE: Repuestos (Ligero...)"
             msg += f"📦 *PAQUETE:* {detalle_paquete}\n"
+        else:
+            # Aquí saldrá: "👥 PASAJEROS: 2" (sin la palabra paquete)
+            msg += f"👥 *PASAJEROS:* {detalle_personas}\n"
 
-        # 3. Datos de ubicación y totales (Mantenemos tu formato de coma 450,45)
+        # Final del mensaje con el formato de coma (450,45)
         msg += (
             f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
             f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
