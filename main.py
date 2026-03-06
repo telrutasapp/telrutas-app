@@ -336,16 +336,26 @@ if st.session_state.punto_a and st.session_state.punto_b:
         st.session_state.punto_a = st.session_state.punto_b = None
         st.rerun()
 
-    # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP ---
+   # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP (CORREGIDO) ---
     if nombre_cliente and telefono_cliente:
-        # Aquí incluimos el tipo de servicio dinámicamente
+        # 1. Encabezado común
         msg = (
             f"¡Hola TelRutas! 👋\n"
             f"👤 *CLIENTE:* {nombre_cliente}\n"
             f"📞 *TEL:* {telefono_cliente}\n"
-            f"🛠️ *SERVICIO:* {st.session_state.tipo}\n"
-            f"📦 *PAQUETE:* {detalle_paquete}\n"
-            f"👥 *Pasajeros:* {detalle_personas}\n"
+            f"🛠️ *SERVICIO:* {st.session_state.tipo.upper()}\n"
+        )
+
+        # 2. LÓGICA DINÁMICA: Aquí eliminamos la palabra "Paquete" en traslados
+        if st.session_state.tipo == "Traslado":
+            # Si es traslado, SOLO muestra pasajeros
+            msg += f"👥 *PASAJEROS:* {detalle_personas}\n"
+        else:
+            # Si es encomienda, SOLO muestra paquete
+            msg += f"📦 *PAQUETE:* {detalle_paquete}\n"
+
+        # 3. Datos de ubicación y totales (Mantenemos tu formato de coma 450,45)
+        msg += (
             f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
             f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
             f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
