@@ -1,220 +1,380 @@
 import streamlit as st
+st.set_page_config(page_title="TelRutas Barinas", layout="wide")
+st.markdown('<meta name="referrer" content="no-referrer">', unsafe_allow_html=True)
 import folium
 from streamlit_folium import st_folium
 from streamlit_js_eval import get_geolocation
 from geopy.distance import geodesic
 import urllib.parse
 import os
+import requests
+import json
+from bs4 import BeautifulSoup
 
-# --- 1. CONFIGURACIÓN ÚNICA Y FUERZA BRUTA PARA MODO CLARO ---
-st.set_page_config(page_title="TelRuta Barinas", layout="wide", initial_sidebar_state="collapsed")
+import streamlit as st
 
+# --- AJUSTE DE ESPACIO SUPERIOR (FUERZA BRUTA) ---
 st.markdown("""
 <style>
-    /* 1. FORZAR FONDO BLANCO */
-    .stApp { background-color: white !important; color: #002D62 !important; }
+    /* 1. Elimina el espacio por defecto de Streamlit en toda la app */
+    .block-container {
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        margin-top: -30px !important; /* Sube todo el contenido */
+    }
+
+    /* 2. Oculta la barra de menú superior de Streamlit (opcional, para más espacio) */
+    header {visibility: hidden;}
     
-    /* 2. LIMPIEZA DE INTERFAZ STREAMLIT */
-    header {visibility: hidden !important; height: 0px !important;}
-    footer {visibility: hidden !important;}
-    .stAppDeployButton {display:none !important;}
-
-    /* 3. BOTÓN DE MENÚ (FIJO Y SIEMPRE VISIBLE) */
-    div.stButton > button[key="btn_principal"] {
-        position: fixed !important; 
-        top: 15px !important; 
-        left: 15px !important; 
-        z-index: 999999 !important; /* Capa más alta para que nada lo tape */
-        background-color: #00569E !important; 
-        color: white !important;
-        width: 55px !important; 
-        height: 55px !important; 
-        border-radius: 50% !important;
-        border: 2px solid white !important;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.2) !important;
+    /* 3. Ajusta el contenedor específico de la imagen (logo) */
+    .stImage {
+        margin-top: 0px !important;
+        padding-top: 0px !important;
     }
-
-    /* 4. COMPACTACIÓN DEL CUERPO (Ajustado para no tapar el menú) */
-    .block-container { 
-        padding-top: 2rem !important; 
-        margin-top: -20px !important; 
+    
+    /* 4. Asegura que la columna que contiene el logo no tenga margen */
+    [data-testid="column"] {
+        padding-top: 0px !important;
     }
-
-    /* 5. TEXTO DE INPUTS */
-    .stTextInput>div>div>input { background-color: #f0f2f6 !important; color: black !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 2. LÓGICA DE ACTUALIZACIÓN REAL ---
-def reiniciar_todo():
-    for key in st.session_state.keys():
-        del st.session_state[key]
-    st.cache_data.clear()
-    st.cache_resource.clear()
-    st.rerun()
+# --- ESTILO PARA EL MENÚ PROFESIONAL ---
+st.markdown("""
+<style>
+    /* Estilo del botón principal del Menú */
+    div.stButton > button[key="btn_principal"] {
+        background-color: #00569E !important;
+        color: white !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important; /* Circular para que parezca un botón flotante */
+        font-size: 25px !important;
+    }
+    /* Estilo de los botones internos del menú */
+    .stButton > button {
+        border-radius: 8px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# --- 3. LÓGICA DEL MENÚ SUPERIOR (APK + AYUDA) ---
-if "menu_abierto" not in st.session_state: st.session_state.menu_abierto = False
-if "ver_qr" not in st.session_state: st.session_state.ver_qr = False
-if "ver_ayuda" not in st.session_state: st.session_state.ver_ayuda = False
+# --- LÓGICA DEL MENÚ ---
+if "menu_abierto" not in st.session_state:
+    st.session_state.menu_abierto = False
 
+# Botón principal en la esquina superior
 if st.button("☰", key="btn_principal"):
     st.session_state.menu_abierto = not st.session_state.menu_abierto
 
 if st.session_state.menu_abierto:
     with st.container(border=True):
         col_m1, col_m2, col_m3 = st.columns(3)
+        
         with col_m1:
             if st.button("🔄 Actualizar", use_container_width=True):
-                st.cache_data.clear()
+                # Esto borra la memoria guardada del servidor
+                st.cache_data.clear() 
                 st.cache_resource.clear()
+                # Esto reinicia la App para mostrar el cambio
                 st.rerun()
+        
         with col_m2:
-            if st.button("📥 APK", use_container_width=True):
-                st.session_state.ver_qr = not st.session_state.ver_qr
-                st.session_state.ver_ayuda = False # Cierra ayuda si abre APK
+            if st.button("📥 Descargar", use_container_width=True):
+                st.session_state.ver_qr = not st.session_state.get("ver_qr", False)
+                st.session_state.ver_ayuda = False
+        
         with col_m3:
             if st.button("❓ Ayuda", use_container_width=True):
-                st.session_state.ver_ayuda = not st.session_state.ver_ayuda
-                st.session_state.ver_qr = False # Cierra APK si abre ayuda
+                st.session_state.ver_ayuda = not st.session_state.get("ver_ayuda", False)
+                st.session_state.ver_qr = False
 
-        # --- SECCIÓN AYUDA / INDICACIONES ---
-        if st.session_state.ver_ayuda:
-            st.markdown("""
-            <div style="background-color: #e8f4fd; padding: 15px; border-radius: 10px; border-left: 5px solid #00569E;">
-                <h4 style="margin-top:0;">Instrucciones de Instalación:</h4>
-                <ol>
-                    <li>Toca el botón <b>📥 APK</b> en este menú.</li>
-                    <li>Escanea el código QR o dale al botón <b>DESCARGAR</b>.</li>
-                    <li>Si Android te avisa de "Archivo dañino", dale a <b>Instalar de todas formas</b> (es un aviso estándar para apps fuera de la Play Store).</li>
-                    <li>Activa <b>"Orígenes desconocidos"</b> en los ajustes de tu teléfono si es necesario.</li>
-                </ol>
-            </div>
-            """, unsafe_allow_html=True)
-
-        # --- SECCIÓN QR / DESCARGA ---
-        if st.session_state.ver_qr:
+        # --- SECCIÓN DINÁMICA: QR Y BOTÓN DE INSTALACIÓN ---
+        if st.session_state.get("ver_qr", False):
             st.markdown("---")
-            col_qr_c = st.columns([1, 2, 1])
-            with col_qr_c[1]:
-                try:
-                    st.image("qr_descarga.png", width=200, caption="Escanea con tu cámara")
-                    with open("telrutas.apk", "rb") as f:
-                        st.download_button("🚀 DESCARGAR APK", data=f, file_name="telrutas.apk", mime="application/vnd.android.package-archive", use_container_width=True)
-                except:
-                    st.error("Archivos de instalación no encontrados.")
+            
+            # 1. BOTÓN DE INSTALACIÓN DIRECTA (Para el usuario que está en el móvil)
+            try:
+                with open("telrutas.apk", "rb") as file:
+                    st.download_button(
+                        label="🚀 CLIC AQUÍ PARA INSTALAR APK",
+                        data=file,
+                        file_name="telrutas.apk",
+                        mime="application/vnd.android.package-archive",
+                        use_container_width=True
+                    )
+            except FileNotFoundError:
+                st.error("⚠️ El archivo 'telrutas.apk' no se encontró en la carpeta.")
 
-# --- 4. ENCABEZADO (LOGO PEQUEÑO PARA SUBIR TODO) ---
-st.image("logo.png", width=220)
+            # 2. QR PARA ESCANEAR (Para el usuario que está frente a una PC)
+            st.markdown("<h3 style='text-align: center;'>O Escanea para Descargar</h3>", unsafe_allow_html=True)
+            _, col_qr, _ = st.columns([1, 2, 1])
+            with col_qr:
+                st.image("qr_descarga.png", use_container_width=True)
+            st.markdown("<p style='text-align: center;'>TelRutas APK (Versión Oficial)</p>", unsafe_allow_html=True)
 
-tasa_fija = float(st.secrets.get("TASA_DIA", 450.45))
-def f_ve(m): return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
+        # --- SECCIÓN DINÁMICA: AYUDA DE INSTALACIÓN ---
+        if st.session_state.get("ver_ayuda", False):
+            st.markdown("---")
+            st.info("""
+            **Guía de Instalación (Fuera de Google Play):**
+            1. **Descarga:** Dale al botón 'INSTALAR' o escanea el QR.
+            2. **Permisos:** Si tu teléfono dice 'Archivo dañino', elige **'Descargar de todos modos'**.
+            3. **Instalación:** Al terminar, toca la notificación o busca `telrutas.apk` en tu carpeta de descargas.
+            4. **Orígenes Desconocidos:** Activa 'Permitir desde esta fuente' si el sistema lo solicita.
+            """)
 
-st.markdown(f'<div class="tasa-display" style="text-align:center; font-weight:bold; background:#e8f4fd; padding:5px; border-radius:10px;">🏛️ Tasa BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
+# --- CARGA DE TARIFAS (DESDE STREAMLIT SECRETS) ---
+def cargar_config():
+    try:
+        if "tarifas" in st.secrets:
+            return dict(st.secrets["tarifas"])
+    except: pass
+    
+    # Valores por defecto si no hay Secrets configurados
+    return {
+        "tarifa_base": 3.00, 
+        "precio_km": 0.80, 
+        "recargo_ligero": 1.00,
+        "recargo_mediano": 3.00,
+        "recargo_pesado": 6.00,
+        "whatsapp": "584264741485"
+    }
 
-# --- 5. REGISTRO (COMPACTO) ---
-st.subheader("👤 Registro Cliente")
-c_nom, c_tel = st.columns(2)
-nombre_cliente = c_nom.text_input("Nombre", placeholder="Su nombre")
-telefono_input = c_tel.text_input("Teléfono", placeholder="0414...")
+config = cargar_config()
+
+# --- 1. CONFIGURACIÓN DE PÁGINA Y ESTILO CSS ---
+st.set_page_config(page_title="TelRutas - Cotizador", layout="centered", initial_sidebar_state="collapsed")
+
+st.markdown("""
+    <style>
+    /* 1. LIMPIEZA TOTAL (Para que no salga el botón negro de Manage App) */
+    #MainMenu {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    footer {visibility: hidden !important;}
+    .stAppDeployButton {display:none !important;}
+    [data-testid="stStatusWidget"] {display:none !important;}
+    [data-testid="stSidebar"] {display: none !important;}
+    .stAppHeader {display: none !important;}
+
+    /* 2. CONFIGURACIÓN DE COLORES DE BOTONES (AZUL TELRUTAS) */
+    div.stButton > button:first-child {
+        background-color: #002D62 !important; /* Azul Oscuro */
+        color: white !important;               /* Texto Blanco */
+        border-radius: 12px !important;
+        border: 2px solid #002D62 !important;
+        font-weight: bold !important;
+        height: 3em !important;
+        width: 100% !important;
+        transition: all 0.3s ease !important;
+    }
+
+    /* 3. COLOR AL PASAR EL MOUSE O TOCAR (NARANJA TELRUTAS) */
+    div.stButton > button:first-child:hover {
+        background-color: #FF7F00 !important; /* Naranja */
+        border-color: #FF7F00 !important;
+        color: white !important;
+    }
+
+    /* 4. ESTILOS DE TEXTO Y CAJAS */
+    .stApp { background-color: #ffffff; }
+    h1, h2, h3, h4 { color: #002D62 !important; }
+    .cotizacion-box { background-color: #f0f4f8; padding: 20px; border-radius: 15px; border-left: 8px solid #FF7F00; border-right: 1px solid #002D62; border-top: 1px solid #002D62; border-bottom: 1px solid #002D62; text-align: center; }
+    .tasa-display { background-color: #e8f4fd; border: 1px solid #002D62; border-radius: 10px; padding: 10px; text-align: center; margin-top: 10px; font-weight: bold; color: #002D62; }
+</style>
+""", unsafe_allow_html=True)
+
+# --- 2. ENCABEZADO: LOGO Y TEXTO ---
+st.image("logo.png", width=350)
+st.markdown("<br>", unsafe_allow_html=True)
+
+st.markdown(f"""
+    <div style="border-left: 6px solid #FF7F00; padding-left: 20px; margin-left: 5px;">
+        <h1 style="margin: 0; color: #002D62; font-size: 36px;">TelRutas Barinas</h1>
+        <p style="font-size: 20px; color: #444; margin: 5px 0;">🚗 <b>Traslados:</b> Mínima ${config["tarifa_base"]:.2f}</p>
+        <p style="font-size: 20px; color: #444; margin: 5px 0;">📦 <b>Encomiendas:</b> Tarifas fijas.</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# --- 3. LÓGICA DE ACTUALIZACIÓN DE TASA (SECRETS + MANUAL) ---
+
+# Función para obtener el valor numérico (siempre con punto decimal internamente)
+def obtener_tasa_numerica():
+    try:
+        # Intenta leer el Secret "TASA_DIA" (debe estar como 450.45 en la web)
+        return float(st.secrets["TASA_DIA"])
+    except:
+        # Valor de respaldo manual en el código si el Secret falla
+        return 450.45
+
+# Asignamos el valor a la variable que usará toda la App
+tasa_fija = obtener_tasa_numerica()
+
+# FUNCIÓN MAESTRA DE FORMATO: Convierte puntos en comas para el público (450.45 -> 450,45)
+def f_ve(m): 
+    return "{:,.2f}".format(m).replace(",", "X").replace(".", ",").replace("X", ".")
+
+# MOSTRAR EN PANTALLA
+st.markdown(f'<div class="tasa-display">🏛️ Tasa Oficial BCV: {f_ve(tasa_fija)} Bs.</div>', unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- 4. REGISTRO CLIENTE (CON ETIQUETAS DENTRO) ---
+st.subheader("👤 Registro Cliente:")
+col_nom, col_tel = st.columns(2)
+
+nombre_cliente = col_nom.text_input("Nombre y Apellido *", placeholder="Escriba su Nombre y Apellido")
+telefono_input = col_tel.text_input("Teléfono de contacto *", placeholder="Ej: 04141234567")
+
+# Filtro para que el teléfono sea estrictamente numérico
 telefono_cliente = "".join(filter(str.isdigit, telefono_input))
 
-# --- 6. SERVICIO ---
-st.write("¿Qué necesitas?")
+# Validación con estilo personalizado (Sin recuadro, solo texto rojo e ícono)
+if not nombre_cliente or not telefono_input:
+    st.markdown("<p style='color:#FF0000; font-weight:bold;'>⚠️ Complete su Nombre y Teléfono para solicitar el servicio.</p>", unsafe_allow_html=True)
+elif telefono_input and not telefono_cliente:
+    st.markdown("<p style='color:#FF0000; font-weight:bold;'>⚠️ El teléfono debe contener estrictamente solo números.</p>", unsafe_allow_html=True)
+
+# --- 5. SELECCIÓN DE SERVICIO ---
+st.subheader("Seleccione el servicio:")
 c1, c2 = st.columns(2)
 if 'tipo' not in st.session_state: st.session_state.tipo = "Traslado"
-if c1.button("🚗 TRASLADO"): st.session_state.tipo = "Traslado"
-if c2.button("📦 ENCOMIENDA"): st.session_state.tipo = "Encomienda"
+if c1.button("🚗 TRASLADO PERSONA", use_container_width=True): st.session_state.tipo = "Traslado"
+if c2.button("📦 ENVIAR ENCOMIENDA", use_container_width=True): st.session_state.tipo = "Encomienda"
 
+# INICIALIZACIÓN CRÍTICA: Evita el NameError en la línea 350
 recargo_fijo = 0.0
-detalle_serv = ""
+detalle_paquete = ""
+detalle_personas = "0" 
 
 if st.session_state.tipo == "Encomienda":
-    desc_prod = st.text_input("Producto:")
-    opcion = st.selectbox("Peso:", ["Ligero (+1$)", "Mediano (+3$)", "Pesado (+6$)"])
-    recargo_fijo = 1.0 if "Ligero" in opcion else (3.0 if "Mediano" in opcion else 6.0)
-    detalle_serv = f"{desc_prod} ({opcion})"
-else:
-    n_p = st.number_input("Personas:", min_value=1, value=1)
-    recargo_fijo = (n_p - 2) * 1.50 if n_p > 2 else 0.0
-    detalle_serv = f"{n_p} Pasajeros"
+    st.markdown("<p style='color:#FF7F00; font-weight:bold;'>📦 DETALLES DE ENCOMIENDA</p>", unsafe_allow_html=True)
+    
+    # Se captura la descripción del producto
+    desc_prod = st.text_input("¿Qué producto envía?", placeholder="Ej: Repuestos, documentos, comida...")
+    
+    opcion = st.selectbox("Seleccione el Peso:", [
+        f"Ligero (Hasta 2 kg) +${config['recargo_ligero']:.2f}", 
+        f"Mediano (Hasta 20 kg) +${config['recargo_mediano']:.2f}", 
+        f"Pesado (Hasta 50 kg) +${config['recargo_pesado']:.2f}"
+    ])
+    
+    # Lógica de recargo por peso
+    if "Ligero" in opcion:
+        recargo_fijo = config["recargo_ligero"]
+    elif "Mediano" in opcion:
+        recargo_fijo = config["recargo_mediano"]
+    else:
+        recargo_fijo = config["recargo_pesado"]
+    
+    # ASIGNACIÓN CORRECTA: Aquí detalle_paquete es la descripción textual
+    detalle_paquete = f"{desc_prod} ({opcion})"
+    detalle_personas = "N/A" # No aplica conteo de personas en encomiendas
 
-# --- 7. RUTA Y MAPA (CON BOTÓN DE REINICIO ARRIBA) ---
+if st.session_state.tipo == "Traslado":
+    st.markdown("<p style='color:#FF7F00; font-weight:bold;'>🚗 Nro. personas</p>", unsafe_allow_html=True)
+    
+    num_personas = st.number_input("¿Cuántas personas viajan?", min_value=1, value=1, step=1)
+    
+    # Recargo obtenido de secrets (asegúrate que esté fuera de [tarifas] en la web)
+    valor_extra = st.secrets.get('recargo_pasajero_extra', 1.50) 
+    
+    if num_personas > 2:
+        recargo_fijo = (num_personas - 2) * valor_extra
+    else:
+        recargo_fijo = 0.0
+
+    # ASIGNACIÓN PARA EL MENSAJE: Aquí detalle_paquete sí es el número de personas
+    detalle_paquete = str(num_personas)
+    detalle_personas = str(num_personas)
+    
+# --- 6. RUTA Y MAPA ---
 st.subheader("📍 Definir Ruta")
 if 'modo_manual' not in st.session_state: st.session_state.modo_manual = False
 if 'punto_a' not in st.session_state: st.session_state.punto_a = None
 if 'punto_b' not in st.session_state: st.session_state.punto_b = None
 
-# Fila de botones de control
-col_gps, col_mapa, col_reset = st.columns(3)
+cg, cm = st.columns(2)
+if cg.button("📡 USAR MI GPS"): st.session_state.modo_manual = False; st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
+if cm.button("📍 MARCAR EN MAPA"): st.session_state.modo_manual = True; st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
 
-if col_gps.button("📡 GPS"): 
-    st.session_state.modo_manual = False
-    st.session_state.punto_a = st.session_state.punto_b = None
-    st.rerun()
-
-if col_mapa.button("📍 MAPA"): 
-    st.session_state.modo_manual = True
-    st.session_state.punto_a = st.session_state.punto_b = None
-    st.rerun()
-
-# AQUÍ SUBIMOS EL BOTÓN PARA QUE NO CHOQUE ABAJO
-if col_reset.button("🔄 LIMPIAR"):
-    st.session_state.punto_a = st.session_state.punto_b = None
-    st.rerun()
-
-# Configuración del mapa
 centro = [8.6226, -70.2039]
+loc = None
 if not st.session_state.modo_manual:
     loc = get_geolocation()
-    if loc: 
-        st.session_state.punto_a = [loc['coords']['latitude'], loc['coords']['longitude']]
-        centro = st.session_state.punto_a
+    if loc: st.session_state.punto_a = [loc['coords']['latitude'], loc['coords']['longitude']]; centro = st.session_state.punto_a
 
 m = folium.Map(location=centro, zoom_start=14)
-if st.session_state.punto_a: 
-    folium.Marker(st.session_state.punto_a, icon=folium.Icon(color='blue', icon='info-sign')).add_to(m)
-if st.session_state.punto_b: 
-    folium.Marker(st.session_state.punto_b, icon=folium.Icon(color='red', icon='flag')).add_to(m)
+if st.session_state.punto_a: folium.Marker(st.session_state.punto_a, icon=folium.Icon(color='blue')).add_to(m)
+if st.session_state.punto_b: folium.Marker(st.session_state.punto_b, icon=folium.Icon(color='red')).add_to(m)
 
-# Mapa más compacto para que el botón de WhatsApp también suba
-map_res = st_folium(m, width=700, height=280)
+map_data = st_folium(m, width=700, height=350)
+if map_data and map_data["last_clicked"]:
+    click = [map_data["last_clicked"]["lat"], map_data["last_clicked"]["lng"]]
+    if st.session_state.modo_manual and st.session_state.punto_a is None: st.session_state.punto_a = click; st.rerun()
+    elif st.session_state.punto_b is None: st.session_state.punto_b = click; st.rerun()
 
-if map_res and map_res["last_clicked"]:
-    click = [map_res["last_clicked"]["lat"], map_res["last_clicked"]["lng"]]
-    if st.session_state.modo_manual and st.session_state.punto_a is None:
-        st.session_state.punto_a = click; st.rerun()
-    elif st.session_state.punto_b is None:
-        st.session_state.punto_b = click; st.rerun()
-
-# --- 8. CÁLCULO FINAL Y WHATSAPP ---
+# --- 7. CÁLCULO FINAL Y WHATSAPP (CÓDIGO ACTUALIZADO) ---
 if st.session_state.punto_a and st.session_state.punto_b:
     dist = geodesic(st.session_state.punto_a, st.session_state.punto_b).km
-    total_usd = (3.00 + (max(0, dist-1) * 0.80)) + recargo_fijo
+    
+    # Cálculo del costo
+    costo_ruta = config["tarifa_base"] if dist <= 1.0 else config["tarifa_base"] + ((dist - 1.0) * config["precio_km"])
+    total_usd = costo_ruta + recargo_fijo
     total_bs = total_usd * tasa_fija
-
+    
+    # Mostrar la cotización en pantalla con tus decimales (Ej: 450,45)
     st.markdown(f'''
         <div class="cotizacion-box">
-            <h2 style="margin:0;">Bs. {f_ve(total_bs)}</h2>
-            <p style="margin:0;"><b>$ {f_ve(total_usd)} USD</b> ({dist:.2f} km)</p>
+            <h4>COTIZACIÓN ESTIMADA</h4>
+            <h1>Bs. {f_ve(total_bs)}</h1>
+            <h2>$ {f_ve(total_usd)} USD</h2>
+            <p>Distancia: {dist:.2f} km</p>
+            <p style="color:#002D62;"><b>Servicio: {st.session_state.tipo}</b></p>
         </div>
     ''', unsafe_allow_html=True)
+    
+    if st.button("🔄 Reiniciar Ruta"): 
+        st.session_state.punto_a = st.session_state.punto_b = None
+        st.rerun()
 
+   # --- GENERACIÓN DEL MENSAJE PARA WHATSAPP ---
     if nombre_cliente and telefono_cliente:
-        msg = (f"¡Hola TelRuta! 👋\n👤 *CLIENTE:* {nombre_cliente}\n📞 *TEL:* {telefono_cliente}\n"
-               f"🛠️ *SERV:* {st.session_state.tipo.upper()}\n📦 *DETALLE:* {detalle_serv}\n"
-               f"📍 *Origen:* http://maps.google.com/?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
-               f"🏁 *Destino:* http://maps.google.com/?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
-               f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}")
+        msg = (
+            f"¡Hola TelRutas! 👋\n"
+            f"👤 *CLIENTE:* {nombre_cliente}\n"
+            f"📞 *TEL:* {telefono_cliente}\n"
+            f"🛠️ *SERVICIO:* {st.session_state.tipo.upper()}\n"
+        )
+
+        # Lógica para mostrar la descripción en Encomienda o solo personas en Traslado
+        if st.session_state.tipo == "Encomienda":
+            # Aquí saldrá: "📦 PAQUETE: Repuestos (Ligero...)"
+            msg += f"📦 *PAQUETE:* {detalle_paquete}\n"
+        else:
+            # Aquí saldrá: "👥 PASAJEROS: 2" (sin la palabra paquete)
+            msg += f"👥 *PASAJEROS:* {detalle_personas}\n"
+
+        # Final del mensaje con el formato de coma (450,45)
+        msg += (
+            f"📍 *Origen:* https://www.google.com/maps?q={st.session_state.punto_a[0]},{st.session_state.punto_a[1]}\n"
+            f"🏁 *Destino:* https://www.google.com/maps?q={st.session_state.punto_b[0]},{st.session_state.punto_b[1]}\n"
+            f"💰 *TOTAL:* ${f_ve(total_usd)} / Bs. {f_ve(total_bs)}"
+        )
         
-        url_wa = f"https://wa.me/584264741485?text={urllib.parse.quote(msg)}"
+        # Codificamos el mensaje para que los espacios y emojis no den error
+        msg_encoded = urllib.parse.quote(msg)
+        url_wa = f"https://wa.me/{config['whatsapp']}?text={msg_encoded}"
+        
+        # Botón de acción con el color Naranja de TelRutas
         st.markdown(f'''
             <a href="{url_wa}" target="_blank" style="text-decoration:none;">
-                <div style="background-color:#FF7F00; color:white; padding:15px; text-align:center; border-radius:12px; font-weight:bold; font-size:20px; margin-top:10px;">
-                    🚀 SOLICITAR AHORA
+                <div style="background-color:#FF7F00; color:white; padding:18px; text-align:center; border-radius:12px; font-weight:bold; font-size:22px; margin-top:20px; box-shadow: 0px 4px 10px rgba(0,0,0,0.2);">
+                    🚀 SOLICITAR {st.session_state.tipo.upper()} AHORA
                 </div>
             </a>
         ''', unsafe_allow_html=True)
-    
-    if st.button("🔄 Reiniciar Ruta", use_container_width=True):
-        st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
+    else:
+        st.warning("⚠️ Por favor, sube y completa tu Nombre y Teléfono para habilitar el botón de solicitud.")
+
+elif not st.session_state.modo_manual and not loc:
+    st.info("📡 Obteniendo señal GPS... Por favor, asegúrese de dar permisos de ubicación.")
+
