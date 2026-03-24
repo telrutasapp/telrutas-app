@@ -100,18 +100,31 @@ else:
     recargo_fijo = (n_p - 2) * 1.50 if n_p > 2 else 0.0
     detalle_serv = f"{n_p} Pasajeros"
 
-# --- 7. MAPA COMPACTO (Altura reducida para que el botón suba) ---
-st.subheader("📍 Ruta")
+# --- 7. RUTA Y MAPA (CON BOTÓN DE REINICIO ARRIBA) ---
+st.subheader("📍 Definir Ruta")
 if 'modo_manual' not in st.session_state: st.session_state.modo_manual = False
 if 'punto_a' not in st.session_state: st.session_state.punto_a = None
 if 'punto_b' not in st.session_state: st.session_state.punto_b = None
 
-cg, cm = st.columns(2)
-if cg.button("📡 GPS"): 
-    st.session_state.modo_manual = False; st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
-if cm.button("📍 MAPA"): 
-    st.session_state.modo_manual = True; st.session_state.punto_a = st.session_state.punto_b = None; st.rerun()
+# Fila de botones de control
+col_gps, col_mapa, col_reset = st.columns(3)
 
+if col_gps.button("📡 GPS"): 
+    st.session_state.modo_manual = False
+    st.session_state.punto_a = st.session_state.punto_b = None
+    st.rerun()
+
+if col_mapa.button("📍 MAPA"): 
+    st.session_state.modo_manual = True
+    st.session_state.punto_a = st.session_state.punto_b = None
+    st.rerun()
+
+# AQUÍ SUBIMOS EL BOTÓN PARA QUE NO CHOQUE ABAJO
+if col_reset.button("🔄 LIMPIAR"):
+    st.session_state.punto_a = st.session_state.punto_b = None
+    st.rerun()
+
+# Configuración del mapa
 centro = [8.6226, -70.2039]
 if not st.session_state.modo_manual:
     loc = get_geolocation()
@@ -120,11 +133,13 @@ if not st.session_state.modo_manual:
         centro = st.session_state.punto_a
 
 m = folium.Map(location=centro, zoom_start=14)
-if st.session_state.punto_a: folium.Marker(st.session_state.punto_a, icon=folium.Icon(color='blue')).add_to(m)
-if st.session_state.punto_b: folium.Marker(st.session_state.punto_b, icon=folium.Icon(color='red')).add_to(m)
+if st.session_state.punto_a: 
+    folium.Marker(st.session_state.punto_a, icon=folium.Icon(color='blue', icon='info-sign')).add_to(m)
+if st.session_state.punto_b: 
+    folium.Marker(st.session_state.punto_b, icon=folium.Icon(color='red', icon='flag')).add_to(m)
 
-# Reducimos el height a 250 para ganar espacio
-map_res = st_folium(m, width=700, height=250)
+# Mapa más compacto para que el botón de WhatsApp también suba
+map_res = st_folium(m, width=700, height=280)
 
 if map_res and map_res["last_clicked"]:
     click = [map_res["last_clicked"]["lat"], map_res["last_clicked"]["lng"]]
