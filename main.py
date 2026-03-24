@@ -11,33 +11,37 @@ st.set_page_config(page_title="TelRuta Barinas", layout="wide", initial_sidebar_
 
 st.markdown("""
 <style>
-    /* Forzar fondo blanco en toda la app */
+    /* 1. FORZAR FONDO BLANCO */
     .stApp { background-color: white !important; color: #002D62 !important; }
     
-    /* Eliminar franjas negras y menús de Streamlit */
+    /* 2. LIMPIEZA DE INTERFAZ STREAMLIT */
     header {visibility: hidden !important; height: 0px !important;}
     footer {visibility: hidden !important;}
     .stAppDeployButton {display:none !important;}
-    [data-testid="stStatusWidget"] {display:none !important;}
 
-    /* Compactar espacios para que todo suba */
-    .block-container { padding-top: 0px !important; padding-bottom: 0px !important; margin-top: -50px !important; }
-    
-    /* Botón de Menú Flotante */
+    /* 3. BOTÓN DE MENÚ (FIJO Y SIEMPRE VISIBLE) */
     div.stButton > button[key="btn_principal"] {
-        background-color: #00569E !important; color: white !important;
-        width: 50px !important; height: 50px !important; border-radius: 50% !important;
-        position: fixed; top: 10px; left: 10px; z-index: 9999;
+        position: fixed !important; 
+        top: 15px !important; 
+        left: 15px !important; 
+        z-index: 999999 !important; /* Capa más alta para que nada lo tape */
+        background-color: #00569E !important; 
+        color: white !important;
+        width: 55px !important; 
+        height: 55px !important; 
+        border-radius: 50% !important;
+        border: 2px solid white !important;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2) !important;
     }
 
-    /* Estilo de los inputs para que resalten en fondo blanco */
-    .stTextInput>div>div>input { background-color: #f0f2f6 !important; color: black !important; }
-    
-    /* Caja de cotización compacta */
-    .cotizacion-box { 
-        background-color: #f8f9fa; padding: 15px; border-radius: 12px; 
-        border: 2px solid #002D62; text-align: center; margin-top: 0px;
+    /* 4. COMPACTACIÓN DEL CUERPO (Ajustado para no tapar el menú) */
+    .block-container { 
+        padding-top: 2rem !important; 
+        margin-top: -20px !important; 
     }
+
+    /* 5. TEXTO DE INPUTS */
+    .stTextInput>div>div>input { background-color: #f0f2f6 !important; color: black !important; }
 </style>
 """, unsafe_allow_html=True)
 
