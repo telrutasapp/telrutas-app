@@ -53,21 +53,56 @@ def reiniciar_todo():
     st.cache_resource.clear()
     st.rerun()
 
-# --- 3. MENÚ SUPERIOR ---
+# --- 3. LÓGICA DEL MENÚ SUPERIOR (APK + AYUDA) ---
 if "menu_abierto" not in st.session_state: st.session_state.menu_abierto = False
+if "ver_qr" not in st.session_state: st.session_state.ver_qr = False
+if "ver_ayuda" not in st.session_state: st.session_state.ver_ayuda = False
 
 if st.button("☰", key="btn_principal"):
     st.session_state.menu_abierto = not st.session_state.menu_abierto
 
 if st.session_state.menu_abierto:
     with st.container(border=True):
-        col_m1, col_m2 = st.columns(2)
+        col_m1, col_m2, col_m3 = st.columns(3)
         with col_m1:
-            if st.button("🔄 ACTUALIZAR APP", use_container_width=True):
-                reiniciar_todo()
+            if st.button("🔄 Actualizar", use_container_width=True):
+                st.cache_data.clear()
+                st.cache_resource.clear()
+                st.rerun()
         with col_m2:
             if st.button("📥 APK", use_container_width=True):
-                st.session_state.ver_qr = not st.session_state.get("ver_qr", False)
+                st.session_state.ver_qr = not st.session_state.ver_qr
+                st.session_state.ver_ayuda = False # Cierra ayuda si abre APK
+        with col_m3:
+            if st.button("❓ Ayuda", use_container_width=True):
+                st.session_state.ver_ayuda = not st.session_state.ver_ayuda
+                st.session_state.ver_qr = False # Cierra APK si abre ayuda
+
+        # --- SECCIÓN AYUDA / INDICACIONES ---
+        if st.session_state.ver_ayuda:
+            st.markdown("""
+            <div style="background-color: #e8f4fd; padding: 15px; border-radius: 10px; border-left: 5px solid #00569E;">
+                <h4 style="margin-top:0;">Instrucciones de Instalación:</h4>
+                <ol>
+                    <li>Toca el botón <b>📥 APK</b> en este menú.</li>
+                    <li>Escanea el código QR o dale al botón <b>DESCARGAR</b>.</li>
+                    <li>Si Android te avisa de "Archivo dañino", dale a <b>Instalar de todas formas</b> (es un aviso estándar para apps fuera de la Play Store).</li>
+                    <li>Activa <b>"Orígenes desconocidos"</b> en los ajustes de tu teléfono si es necesario.</li>
+                </ol>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # --- SECCIÓN QR / DESCARGA ---
+        if st.session_state.ver_qr:
+            st.markdown("---")
+            col_qr_c = st.columns([1, 2, 1])
+            with col_qr_c[1]:
+                try:
+                    st.image("qr_descarga.png", width=200, caption="Escanea con tu cámara")
+                    with open("telrutas.apk", "rb") as f:
+                        st.download_button("🚀 DESCARGAR APK", data=f, file_name="telrutas.apk", mime="application/vnd.android.package-archive", use_container_width=True)
+                except:
+                    st.error("Archivos de instalación no encontrados.")
 
 # --- 4. ENCABEZADO (LOGO PEQUEÑO PARA SUBIR TODO) ---
 st.image("logo.png", width=220)
